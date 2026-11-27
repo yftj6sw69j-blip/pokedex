@@ -10,8 +10,11 @@ const vaultMap=c=>({id:c.id,name:c.name,set:c.set?.name||'',year:(c.set?.release
 async function vaultTop(){try{const c=JSON.parse(localStorage.getItem(VAULT_KEY)||'null');if(c&&Date.now()-c.t<864e5*3)return c.L}catch(e){}
   const j=await tcgTry(`${TCG}?pageSize=100&q=supertype:pokemon&orderBy=-cardmarket.prices.trendPrice&select=id,name,rarity,set,images,cardmarket,nationalPokedexNumbers`);
   if(!j)return null;const L=j.data.map(vaultMap).filter(x=>x.gbp!=null);try{localStorage.setItem(VAULT_KEY,JSON.stringify({t:Date.now(),L}))}catch(e){}return L}
-async function vaultSearch(q){q=q.trim().replace(/["*]/g,'');if(q.length<2)return [];
-  const j=await tcgTry(`${TCG}?pageSize=30&q=${encodeURIComponent(`supertype:pokemon name:"*${q}*"`)}&orderBy=-cardmarket.prices.trendPrice&select=id,name,rarity,set,images,cardmarket,nationalPokedexNumbers`,4);
+// kids misspell: "charzard" searches for Charizard (uses the Add-search speller)
+function vaultTerm(q){q=q.trim().replace(/["*:]/g,'');const fix=typeof suggestFor==='function'?suggestFor(q,1)[0]:null;
+  return fix&&!normName(fix.name).startsWith(normName(q))?fix.name:q}
+async function vaultSearch(q){q=vaultTerm(q);if(q.length<2)return [];const term=q.includes(' ')?`"${q}*"`:`${q}*`;
+  const j=await tcgTry(`${TCG}?pageSize=30&q=${encodeURIComponent(`supertype:pokemon name:${term}`)}&orderBy=-cardmarket.prices.trendPrice&select=id,name,rarity,set,images,cardmarket,nationalPokedexNumbers`,7);
   return j?j.data.map(vaultMap).filter(x=>x.gbp!=null):null}
 const ownsId=id=>Object.values(own).some(L=>L.some(c=>c.id===id));
 function vaultRow(x,i){const mine=ownsId(x.id),dexHas=x.no&&has(x.no);
@@ -30,7 +33,7 @@ function openVault(){openSheet('Treasure vault',async body=>{
   W.querySelector('#vtForm').addEventListener('submit',async e=>{e.preventDefault();const q=W.querySelector('#vtQ').value;W.querySelector('#vtQ').blur();if(!q.trim()){showTop();return}
     out.innerHTML='<p class="hint vt-load">Searching every card…</p>';const R=await vaultSearch(q);if(!out.isConnected)return;
     out.innerHTML=R===null?'<p class="hint">Couldn\'t search right now. Try again in a moment.</p>':!R.length?`<p class="hint">No cards found for "${esc(q)}". Check the spelling?</p>`:
-      `<div class="sec">Most valuable ${esc(q)} cards <button class="sec-link" id="vtBack">Top 100 ›</button></div><div class="vt-list">${R.map(vaultRow).join('')}</div>`;
+      `<div class="sec">Most valuable ${esc(vaultTerm(q))} cards <button class="sec-link" id="vtBack">Top 100 ›</button></div><div class="vt-list">${R.map(vaultRow).join('')}</div>`;
     out.querySelector('#vtBack')?.addEventListener('click',showTop)});
   W.querySelector('#vtQ').addEventListener('input',e=>{if(!e.target.value.trim()&&top)showTop()});
   top=await vaultTop();if(out.isConnected)showTop()})}
