@@ -15,12 +15,12 @@ const _xpV=xpOf;xpOf=function(A){return _xpV(A)+verXP()};
 // every print, from the card database, cached on this device for a week
 async function verFetch(no,force){const k=VER_KEY+no;
   if(!force){try{const c=JSON.parse(localStorage.getItem(k)||'null');if(c&&Date.now()-c.t<6048e5)return c.L}catch(e){}}
-  const L=[];for(let page=1;page<=4;page++){const url=`${TCG}?q=${encodeURIComponent('nationalPokedexNumbers:'+no)}&orderBy=-set.releaseDate&page=${page}&pageSize=250&select=id,name,number,rarity,images,set,supertype`;
-    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),15000);let j;
-    try{const r=await fetch(url,{signal:ctl.signal});if(!r.ok)throw new Error('HTTP '+r.status);j=await r.json()}finally{clearTimeout(to)}
+  const L=[];for(let page=1;page<=4;page++){const url=`${TCG}?q=${encodeURIComponent('nationalPokedexNumbers:'+no)}&page=${page}&pageSize=250&select=id,name,number,rarity,images,set,supertype`;
+    let j;for(let a=0;a<4&&!j;a++){const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),20000);
+      try{const r=await fetch(url,{signal:ctl.signal});if(!r.ok)throw new Error('HTTP '+r.status);j=await r.json()}catch(e){if(a===3)throw e;await new Promise(r=>setTimeout(r,800*(a+1)))}finally{clearTimeout(to)}}
     (j.data||[]).forEach(c=>L.push({id:c.id,name:c.name,number:c.number,set:c.set?.name||'',date:c.set?.releaseDate||'',rarity:c.rarity||'',img:c.images?.small||''}));
     if(L.length>=(j.totalCount||0)||!(j.data||[]).length)break}
-  try{localStorage.setItem(k,JSON.stringify({t:Date.now(),L}))}catch(e){}return L}
+  L.sort((a,b)=>String(b.date).localeCompare(String(a.date)));try{localStorage.setItem(k,JSON.stringify({t:Date.now(),L}))}catch(e){}return L}
 
 let verF='all';
 function verBadges(n){return `<div class="vr-badges">${VER_TIERS.map(([at,l,ic])=>`<span class="vr-b ${n>=at?'got':''}"><i>${ic}</i><b>${l}</b><small>${n>=at?'Won!':at+' versions'}</small></span>`).join('')}</div>`}
