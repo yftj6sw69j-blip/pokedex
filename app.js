@@ -205,7 +205,7 @@ const stage=$('#stage'),hero=$('#hero'),flip=$('#flip'),front=$('#front'),back=$
 // real trading cards are 63 × 88 mm → aspect 1.397
 function cardRect(){const W=Math.min(300,innerWidth-64,(innerHeight-260)/1.397),H=W*1.397;return {x:innerWidth/2,y:Math.max(H/2+24,innerHeight*0.42),w:W,h:H}}
 function setHero(x,y,w,h,rad,sc=1,rx=0,ry=0,sx=1,sy=1){hero.style.width=w+'px';hero.style.height=h+'px';hero.style.borderRadius=rad+'px';
-  hero.style.transform=`translate(${x-w/2}px,${y-h/2}px) scale(${sc*sx},${sc*sy}) rotate(${rx}deg)`;flip.style.borderRadius=rad+'px';flip.style.transform=`rotateY(${ry}deg)`}
+  hero.style.transform=`translate(${x-w/2}px,${y-h/2}px) scale(${sc*sx},${sc*sy}) rotate(${rx}deg)`;flip.style.borderRadius=rad+'px';flip.style.transform=`rotateY(${ry}deg)`;const ang=((ry%360)+360)%360,bk=back.childElementCount>0&&ang>90&&ang<270;front.style.visibility=bk?'hidden':'visible';back.style.visibility=bk?'visible':'hidden'}
 function frontHTML(p,o){const c=tc(p.types[0]);
   if(o&&o.photo)return `<img class="cardimg" src="${o.photo}" alt="Photo of the ${esc(p.name)} card">${o.tier!=='c'?'<div class="shine"></div>':''}`;
   if(o&&o.imgL)return `<img class="cardimg" src="${esc(o.imgL)}" alt="${esc(o.name)} card, ${esc(o.set)}">${o.tier!=='c'?'<div class="shine"></div>':''}`;
@@ -297,15 +297,22 @@ async function catchCard(src,card){if(busy||catching)return;const p=byNo(card.no
   // settle on the same frame: rotateY(180)+scaleX(-1) reads the same as rotateY(0)
   front.style.transform='';setHero(C.x,C.y,C.w,C.h,14,1,0,0);
   const xp=(isNew?100:20)+(card.tier==='r'?150:ultra?400:0);
-  const head=isNew?'Gotcha!':'Another one!';const line=isNew?`${esc(p.name)} joined your Pokédex · +${xp} XP`:`A new ${esc(p.name)} card for your collection · +${xp} XP`;
+  const head='Is this your card?';const line=`${esc(card.set||'')}${card.number?' · '+esc(card.number)+(card.total?'/'+esc(card.total):''):''} · ${isNew?'a new Pokémon!':'you have '+esc(p.name)+' already'} · +${xp} XP`;
   words.innerHTML=`${rare?`<div class="mask"><span><span class="tag">${ultra?'LEGENDARY PULL!':'RARE PULL!'}</span></span></div>`:''}<div class="mask"><span class="big ${ultra?'gold':''}">${head}</span></div><div class="mask"><span class="small">${line}</span></div>`;
   // if the card and words don't fit, push the camera up so both stay on screen
-  const wordsH=rare?150:118,bottom=C.y+C.h/2+18+wordsH+64;let lift=Math.max(0,bottom-(innerHeight-16));
+  const wordsH=rare?150:118,bottom=C.y+C.h/2+18+wordsH+120;let lift=Math.max(0,bottom-(innerHeight-16));
   if(lift){await play(300,t=>{const e=GLIDE(t/300);setHero(C.x,C.y-lift*e,C.w,C.h,14)});C.y-=lift}
   words.style.top=(C.y+C.h/2+18)+'px';words.hidden=false;words.classList.remove('rise');void words.offsetWidth;words.classList.add('rise');[...words.querySelectorAll('.mask>span')].forEach((s,i)=>s.style.setProperty('--i',i));
-  done.style.top=(C.y+C.h/2+18+wordsH)+'px';done.hidden=false;done.animate?.([{transform:'translateX(-50%) scale(0)'},{transform:'translateX(-50%) scale(1)'}],{duration:SP.snap.T*1250,easing:getComputedStyle(document.documentElement).getPropertyValue('--sp-snap').trim()||'ease-out'});
-  catching={p,C,orb,card};busy=false}
-done.addEventListener('click',async e=>{e.stopPropagation();if(!catching||busy)return;busy=true;const {p,C,orb,card}=catching;done.hidden=true;words.hidden=true;
+  done.textContent='Yes, it\'s mine!';done.style.top=(C.y+C.h/2+18+wordsH)+'px';done.hidden=false;nope.style.top=(C.y+C.h/2+18+wordsH+58)+'px';nope.hidden=false;done.animate?.([{transform:'translateX(-50%) scale(0)'},{transform:'translateX(-50%) scale(1)'}],{duration:SP.snap.T*1250,easing:getComputedStyle(document.documentElement).getPropertyValue('--sp-snap').trim()||'ease-out'});
+  catching={p,C,orb,card,a,isNew,xp};busy=false}
+const nope=$('#nope');
+nope.addEventListener('click',async e=>{e.stopPropagation();if(!catching||busy)return;busy=true;const {C,orb,a}=catching;done.hidden=true;nope.hidden=true;words.hidden=true;stage.classList.remove('on');
+  // the card shrinks back into the ball's spot: nothing was added
+  await play(480,t=>{const e=HAND(t/480),pt=arcPoint({x:C.x,y:C.y},a,e,-.18);setHero(pt.x,pt.y,lerp(C.w,40,e),lerp(C.h,40,e),lerp(14,20,e),1,0,0)});
+  hero.hidden=true;orb.style.visibility='';catching=null;busy=false;toast('No problem. Pick the card that matches yours')});
+done.addEventListener('click',async e=>{e.stopPropagation();if(!catching||busy)return;busy=true;const {p,C,orb,card,isNew,xp}=catching;done.hidden=true;nope.hidden=true;
+  words.innerHTML=`<div class="mask"><span class="big ${card.tier==='u'?'gold':''}">${isNew?'Gotcha!':'Another one!'}</span></div><div class="mask"><span class="small">${isNew?esc(p.name)+' joined your Pokédex':'A new '+esc(p.name)+' card'} · +${xp} XP</span></div>`;
+  words.classList.remove('rise');void words.offsetWidth;words.classList.add('rise');[...words.querySelectorAll('.mask>span')].forEach((s,i)=>s.style.setProperty('--i',i));await wait(900);words.hidden=true;
   const levelBefore=Math.floor(xpOf(albums())/LV)+1;if(typeof snapTiers==='function')snapTiers();
   const tr=$('#tabDex').getBoundingClientRect(),b={x:tr.left+tr.width/2,y:tr.top+14};
   stage.style.setProperty('--ox',b.x+'px');stage.style.setProperty('--oy',b.y+'px');stage.classList.remove('on');
@@ -313,7 +320,7 @@ done.addEventListener('click',async e=>{e.stopPropagation();if(!catching||busy)r
   await play(620,t=>{const u=t/620,e=HAND(u)+antic(u)*(1-u);const pt=arcPoint({x:C.x,y:C.y},b,clamp01(e),.2);setHero(pt.x,pt.y,C.w,C.h,14,Math.max(0.02,1-clamp01(e)))});
   hero.hidden=true;orb.style.visibility='';const tab=$('#tabDex');tab.classList.remove('pop');void tab.offsetWidth;tab.classList.add('pop');
   (own[p.no]=own[p.no]||[]).push(card);(card.also||[]).forEach(n=>{if(byNo(n)&&!(own[n]||[]).some(c=>c.id===card.id))(own[n]=own[n]||[]).push({...card,no:n,also:[]})});
-  delete wish[p.no];save();
+  delete wish[p.no];save();if(typeof showUndo==='function')showUndo(p,card);
   if(gen&&gen!==p.gen){gen=p.gen;renderGens()}if(!['all','caught'].includes(filt)&&!p.types.includes(filt)){filt='all';renderFilters()}
   renderHome();renderGrid();$('#results').querySelectorAll('.pick').forEach(el=>{const c=found[+el.dataset.i];if(c&&c.nationalPokedexNumbers.includes(p.no)&&!el.querySelector('.have'))el.insertAdjacentHTML('beforeend','<span class="have">In your Pokédex</span>')});
   catching=null;busy=false;

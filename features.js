@@ -280,3 +280,13 @@ function initFeatures(){load2();
   applyProfile();
   if(!prof.onboarded&&!Object.keys(own).length)startWelcome();else if(!prof.onboarded){prof.onboarded=true;save2()}
   snapTiers();if(typeof initSync==='function')initSync()}
+
+/* ---------- undo straight after adding (anything older: grown-ups corner) ---------- */
+let undoTimer=0;
+function showUndo(p,card){let u=$('#undo');if(!u){u=document.createElement('div');u.id='undo';u.className='undo';document.body.appendChild(u)}
+  clearTimeout(undoTimer);u.innerHTML=`<span>Added ${esc(card.name||p.name)}</span><button id="undoBtn">Undo</button><i></i>`;u.hidden=false;u.classList.remove('in');void u.offsetWidth;u.classList.add('in');
+  u.querySelector('#undoBtn').onclick=()=>{const rm=n=>{own[n]=(own[n]||[]).filter(c=>c.id!==card.id);if(!own[n].length){delete own[n];delete fav[n]}};rm(p.no);(card.also||[]).forEach(rm);
+    if(pack){pack.cards=pack.cards.filter(id=>id!==card.id);save2();renderPackBar()}save();renderHome();renderGrid();
+    $('#results').querySelectorAll('.pick .have').forEach(h=>h.remove());hideUndo();toast(`${card.name||p.name} taken out`)};
+  undoTimer=setTimeout(hideUndo,8000)}
+function hideUndo(){const u=$('#undo');if(u)u.hidden=true}
