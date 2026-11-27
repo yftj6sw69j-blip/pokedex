@@ -589,4 +589,6 @@ body.sheet-open{overflow:hidden}
 .face.back>*{flex-shrink:0}
 .face.back .say{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:10px 14px;line-height:1.2}
 .tpill{color:#141414!important;text-shadow:none!important;font-weight:700}
+.face.back{scrollbar-width:none}
+.face.back::-webkit-scrollbar{display:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
