@@ -61,3 +61,19 @@ async function askTilt(){if(tiltAsked)return;tiltAsked=true;try{if(typeof Device
   addEventListener('deviceorientation',onTilt);tiltOn=true}catch(e){}}
 document.addEventListener('click',e=>{if(e.target.closest('.tile,.opencard'))askTilt()},true);
 new MutationObserver(()=>{const st=$('#stage');if(st&&!st.classList.contains('on'))$('#hero').style.rotate=''}).observe($('#stage'),{attributes:true,attributeFilter:['class']});
+
+/* ---------- his name in the title ("Sam's Pokédex") ---------- */
+function dexTitle(){const n=(prof.name||'').trim();return n&&n!=='Trainer'?`${n}${/s$/i.test(n)?"'":"'s"} Pokédex`:'Pokédex'}
+if(typeof applyProfile==='function'){const _ap=applyProfile;applyProfile=function(){_ap();const t=dexTitle();const h=$('.brand h1');if(h)h.textContent=t;document.title=t;
+  document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content',t)}}
+
+/* ---------- home-screen app: install help ---------- */
+let installEvt=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e});
+const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+function installHTML(){if(standalone())return `<div class="sec">App icon</div><p class="hint">✓ Opened from the home screen. It works offline and full screen.</p>`;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  return `<div class="sec">Put it on the home screen</div>${installEvt?`<button class="photo-btn" id="doInstall">Add the app icon</button>`:
+   ios?`<ol class="steps"><li>Open this page in <b>Safari</b>.</li><li>Tap the <b>Share</b> button (the square with an arrow).</li><li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li></ol>`:
+   `<ol class="steps"><li>Open this page in <b>Chrome</b>.</li><li>Tap the <b>⋮</b> menu at the top right.</li><li>Tap <b>Add to Home screen</b> (or <b>Install app</b>), then <b>Install</b>.</li></ol>`}`}
+document.addEventListener('click',async e=>{if(e.target.closest('#doInstall')&&installEvt){installEvt.prompt();await installEvt.userChoice;installEvt=null;refreshSheet?.()}});
+if(typeof parentBody==='function'){const _pb=parentBody;parentBody=function(body){_pb(body);body.insertAdjacentHTML('afterbegin',installHTML())}}
