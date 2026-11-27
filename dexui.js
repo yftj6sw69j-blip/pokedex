@@ -91,14 +91,23 @@ function swipeTarget(){
   if(cur===1)return {kind:'gen',el:$('#grid')};
   return {kind:'tab',el:$(VIEWS[cur])}}
 addEventListener('touchstart',e=>{if(e.touches.length!==1){SW.on=false;return}const t=e.touches[0];
-  if(scrollsX(e.target)){SW.on=false;return}const tg=swipeTarget();if(!tg){SW.on=false;return}
+  if(t.clientX<22||t.clientX>innerWidth-22||scrollsX(e.target)){SW.on=false;return}const tg=swipeTarget();if(!tg){SW.on=false;return}
   Object.assign(SW,{on:true,lock:0,x:t.clientX,y:t.clientY,dx:0,t:performance.now(),vx:0,lx:t.clientX,lt:performance.now(),tg})},{passive:true});
 addEventListener('touchmove',e=>{if(!SW.on)return;const t=e.touches[0],dx=t.clientX-SW.x,dy=t.clientY-SW.y;
   if(!SW.lock){if(Math.abs(dx)<10&&Math.abs(dy)<10)return;SW.lock=Math.abs(dx)>Math.abs(dy)*1.2?1:-1;
     if(SW.lock<0){SW.on=false;return}SW.tg.el.style.transition='none';if(SW.tg.kind==='sheet'&&SW.x>40&&dx<0){SW.on=false;return}}
   const now=performance.now();SW.vx=(t.clientX-SW.lx)/Math.max(1,now-SW.lt);SW.lx=t.clientX;SW.lt=now;SW.dx=dx;
   if(e.cancelable)e.preventDefault();
-  const fx=follow(SW.tg,dx);if(SW.tg.kind==='card'){hero.style.translate=`${fx}px 0`;hero.style.rotate=`${fx/40}deg`}else SW.tg.el.style.transform=`translateX(${fx}px)`},{passive:false});
+  const fx=follow(SW.tg,dx);if(SW.tg.kind==='card'){hero.style.translate=`${fx}px 0`;hero.style.rotate=`${fx/40}deg`}
+  else if(SW.tg.kind==='tab'){SW.tg.el.style.translate=`${fx}px 0`;peek(dx,fx)}
+  else SW.tg.el.style.transform=`translateX(${fx}px)`},{passive:false});
+const pageW=()=>Math.min(innerWidth,$('#app').clientWidth);
+function peek(dx,fx){const d=dx<0?1:-1,i=cur+d;
+  if(SW.peek&&SW.peek.i!==i)hidePeek();
+  if(!SW.peek&&i>=0&&i<VIEWS.length&&!tabEnd(dx)){const n=$(VIEWS[i]);if(i===4&&typeof renderTrainer==='function')renderTrainer();
+    n.hidden=false;n.style.cssText='';n.style.transition='none';n.style.position='relative';n.style.top=scrollY+'px';n.style.pointerEvents='none';SW.peek={el:n,i,dir:d}}
+  if(SW.peek)SW.peek.el.style.translate=`${SW.peek.dir*pageW()+fx}px 0`}
+function hidePeek(){const p=SW.peek;if(!p)return;p.el.hidden=true;p.el.style.cssText='';SW.peek=null}
 const genEnd=dx=>{const i=GEN_ORDER.indexOf(gen);return dx>0?i<=0:i>=GEN_ORDER.length-1};
 const tabEnd=dx=>dx>0?cur<=0:cur>=VIEWS.length-1;
 function edge(tg,dx){ // true when there is no page at all in that direction
@@ -110,24 +119,34 @@ function follow(tg,dx){if(edge(tg,dx))return dx*.18; // rubber band at the ends
   return tg.kind==='sheet'||tg.kind==='card'?dx:dx*.55}
 addEventListener('touchend',()=>{if(!SW.on||SW.lock!==1){SW.on=false;return}SW.on=false;const {tg,dx,vx}=SW;
   const commit=!edge(tg,dx)&&(Math.abs(dx)>(tg.kind==='sheet'?110:70)||(Math.abs(vx)>.45&&Math.abs(dx)>24));
-  if(!commit){if(tg.kind==='card')cardBack();else snapBack(tg.el);return}
+  if(!commit){if(tg.kind==='card')cardBack();else if(tg.kind==='tab')tabBack();else snapBack(tg.el);return}
   const x=follow(tg,dx),dir=dx<0?1:-1;
   if(tg.kind==='card'){nextCard(dir);return}
   if(tg.kind==='sheet'){swipeCloseSheet(tg.el,x);return}
   if(tg.kind==='gen'&&!genEnd(dx)){const g=GEN_ORDER[GEN_ORDER.indexOf(gen)+dir];tap();setGen(g,dir,x);return}
-  tap();if(tg.kind==='gen'){const v=$(VIEWS[cur]);tg.el.style.transition='none';tg.el.style.transform='';v.style.transform=`translateX(${x}px)`}
+  tap();if(tg.kind==='gen'){const v=$(VIEWS[cur]);tg.el.style.transition='none';tg.el.style.transform='';v.style.translate=`${x}px 0`}
   swipeGo(cur+dir,dir,x)});
-async function swipeGo(i,dir,x){if(RM){go(i);return}busy=true;const o=$(VIEWS[cur]),n=$(VIEWS[i]);if(typeof onTab==='function')onTab(i,cur);
+function tabBack(){const o=$(VIEWS[cur]),p=SW.peek,T='translate var(--sp-snap-ms) var(--sp-snap)';o.style.transition=T;o.style.translate='0 0';
+  if(p){p.el.style.transition=T;p.el.style.translate=`${p.dir*pageW()}px 0`;const el=p.el;SW.peek=null;setTimeout(()=>{el.hidden=true;el.style.cssText=''},360)}
+  setTimeout(()=>{o.style.transition='';o.style.translate=''},360)}
+async function swipeGo(i,dir,x){if(RM){hidePeek();go(i);return}busy=true;const o=$(VIEWS[cur]),W=pageW();
+  let n=$(VIEWS[i]);const peeked=SW.peek&&SW.peek.i===i;if(!peeked){hidePeek();n.hidden=false;n.style.cssText='';n.style.position='relative';n.style.top=scrollY+'px';n.style.transition='none';n.style.translate=`${dir*W+x}px 0`;void n.offsetWidth}
+  SW.peek=null;n.style.pointerEvents='';if(typeof onTab==='function')onTab(i,cur);
   document.querySelectorAll('.tab').forEach(t=>{if(+t.dataset.tab===i)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});
-  $('#app').style.setProperty('--glow',GLOWS[i]);const W=Math.min(innerWidth,$('#app').clientWidth);
-  // the old page keeps travelling the way the finger went; the new page rides in beside it
-  o.style.transition='transform 260ms var(--exit)';o.style.transform=`translateX(${-dir*W}px)`;
-  const sy=scrollY;n.hidden=false;n.style.transition='none';n.style.clipPath='';n.style.position='relative';n.style.top=sy+'px'; // sits where the eye is, even if the old page was scrolled
-  n.style.translate=`${dir*W+x}px 0`;n.classList.remove('rise');void n.offsetWidth;
-  n.classList.add('rise');n.style.transition='translate var(--sp-lift-ms) var(--sp-lift)';n.style.translate='0 0';
-  await wait(260);o.hidden=true;o.style.cssText='';n.style.top='';scrollTo({top:0});cur=i;busy=false;
-  setTimeout(()=>{if(cur===i){n.style.transition='';n.style.translate='';n.style.position=''}},420)}
-addEventListener('touchcancel',()=>{if(SW.on&&SW.lock===1){if(SW.tg.kind==='card')cardBack();else snapBack(SW.tg.el)}SW.on=false});
+  $('#app').style.setProperty('--glow',GLOWS[i]);
+  // both pages carry on together, like turning one page of a binder: same curve, same distance, no jump
+  const T='translate 300ms var(--handoff)';o.style.transition=T;o.style.translate=`${-dir*W}px 0`;n.style.transition=T;n.style.translate='0 0';
+  n.classList.remove('rise');void n.offsetWidth;n.classList.add('rise');
+  await wait(300);o.hidden=true;o.style.cssText='';n.style.transition='none';n.style.top='';n.style.position='';n.style.translate='';scrollTo({top:0});cur=i;busy=false}
+addEventListener('touchcancel',()=>{if(SW.on&&SW.lock===1){if(SW.tg.kind==='card')cardBack();else if(SW.tg.kind==='tab')tabBack();else snapBack(SW.tg.el)}SW.on=false});
+
+/* the browser's own back (edge swipe, Android back button) becomes "back" inside the app, so he never falls out of it */
+let backArmed=false;
+function armBack(){if(backArmed)return;try{history.pushState({pkdx:1},'');backArmed=true}catch(e){}}
+addEventListener('pointerdown',armBack,{capture:true,passive:true});
+addEventListener('popstate',()=>{backArmed=false;appBack();armBack()});
+function appBack(){const q=document.querySelector('.qov');if(q){q.click();return}
+  if(open){if(!busy)closeTile();return}const s=$('#sheet');if(s&&!s.hidden){closeSheet();return}if(cur!==0&&!busy)go(0)}
 
 /* ---------- swipe through Pokémon while a card is open ---------- */
 function cardList(){return open&&open.el&&open.el.closest&&open.el.closest('#grid')?listFor():DEX.slice().sort((a,b)=>a.no-b.no)}
