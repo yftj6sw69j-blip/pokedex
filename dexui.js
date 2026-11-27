@@ -8,7 +8,7 @@ let typeF='';
 const TYPE_IC={fire:'🔥',water:'💧',grass:'🌿',electric:'⚡',psychic:'🔮',ghost:'👻',fighting:'🥊',rock:'🪨',normal:'⭐',
   fairy:'✨',dragon:'🐉',poison:'🧪',flying:'🪶',ground:'⛰️',bug:'🐛',steel:'⚙️',dark:'🌙',ice:'❄️'};
 const GEN_STARTERS={1:[1,4,7],2:[152,155,158],3:[252,255,258],4:[387,390,393],5:[495,498,501],6:[650,653,656],7:[722,725,728],8:[810,813,816],9:[906,909,912]};
-const GEN_ORDER=[1,2,3,4,5,6,7,8,9,0];
+const GEN_ORDER=[0,1,2,3,4,5,6,7,8,9];
 const STATUS=[['all','All','<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>'],
   ['caught','Caught','<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M4 12h5m6 0h5"/><circle cx="12" cy="12" r="2.6"/></svg>'],
   ['missing','Missing','<svg viewBox="0 0 24 24"><path d="M9.2 9a3 3 0 1 1 4.2 2.8c-.9.4-1.4 1.1-1.4 2v.7"/><circle cx="12" cy="17.6" r=".6"/></svg>'],
