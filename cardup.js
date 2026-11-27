@@ -36,3 +36,31 @@ openProfile=function(){openSheet('My trainer card',body=>{const A=albums(),xp=xp
       const av=body.querySelector('.avatar.big');if(av&&!RM){av.classList.remove('avpop');void av.offsetWidth;av.classList.add('avpop')}if(typeof sfx==='function')sfx('tap');return}
     const pn=e.target.closest('[data-pn]');if(pn){prof.partner=+pn.dataset.pn;save2();applyProfile();refreshSheet()}
     const ft=e.target.closest('[data-ft]');if(ft){prof.fav=ft.dataset.ft;save2();applyProfile();refreshSheet()}})})};
+
+/* ---------- level-up card reveal: a wrapped card he tears open when he reaches a new rank ---------- */
+const tierIdx=lv=>CARD_TIERS.indexOf(cardTier(lv));
+function checkCardReveal(lv){const i=tierIdx(lv);if(prof.cardSeen===undefined&&i===0){prof.cardSeen=0;save2();return}
+  if(i>(prof.cardSeen||0)&&!celebQ.some(x=>x.kind==='card')){celebQ.push({kind:'card',i,lv});prof.cardSeen=i;save2();setTimeout(()=>runCeleb(),600)}}
+const _rhR=renderHomeExtra;renderHomeExtra=function(A,xp,lv){_rhR(A,xp,lv);if(DEX.length&&prof.onboarded!==false)checkCardReveal(lv)};
+const _runCelebR=runCeleb;runCeleb=async function(){if(celebBusy||!celebQ.length)return;
+  if(celebQ[0].kind==='card'&&celebQ.some(x=>x.kind!=='card'))celebQ.push(celebQ.shift()); // level-up badge first, then the card
+  if(celebQ[0].kind!=='card')return _runCelebR();
+  celebBusy=true;const it=celebQ.shift();await revealCard(it);celebBusy=false;runCeleb()};
+async function revealCard({i,lv}){const t=CARD_TIERS[i],ov=document.createElement('div');ov.className='lvreveal';
+  ov.innerHTML=`<div class="rv-dim"></div><div class="rv-rays"></div>
+   <div class="rv-stage"><div class="rv-card tcard cf-${t[1]}"><span class="cf-fx"></span><span class="cf-badge">${t[2]}</span>
+      <div class="avatar big ${prof.partner?'has-art':''}">${partnerArt()}</div><div class="pf-name">${esc(prof.name||'Trainer')}</div><div class="muted">${rankOf(lv)}</div></div>
+    <div class="rv-wrap rv-top"><span class="rv-ball"></span></div><div class="rv-wrap rv-bot"><span class="rv-tear">Tap to open</span></div></div>
+   <div class="rv-words"><div class="mask"><span class="big gold">New card unlocked!</span></div><div class="mask"><span class="small">Your trainer card is wrapped up. Tap it!</span></div></div>`;
+  document.body.appendChild(ov);paintAvatars();const st=ov.querySelector('.rv-stage'),w=ov.querySelector('.rv-words');
+  if(typeof sfx==='function')sfx('ball');void ov.offsetWidth;ov.classList.add('in');riseIn(w);
+  await new Promise(r=>st.addEventListener('click',r,{once:true}));
+  if(typeof sfx==='function')sfx('level');if(typeof buzz==='function')buzz([20,40,30]);
+  ov.classList.add('open');w.innerHTML=`<div class="mask"><span class="big gold">${t[2]}!</span></div><div class="mask"><span class="small">You're a ${rankOf(lv)} now. Your new card is on your home screen.</span></div><button class="cta rv-ok">Show it off</button>`;riseIn(w);
+  await new Promise(r=>w.querySelector('.rv-ok').addEventListener('click',r,{once:true}));
+  // the card travels home on an arc and lands on his trainer card (one object, Exit then settle)
+  const dest=($('.trainer')&&!$('#v-home').hidden?$('.trainer'):$('#lvlChip')).getBoundingClientRect(),card=ov.querySelector('.rv-card'),r0=card.getBoundingClientRect();
+  ov.classList.add('out');w.innerHTML='';
+  if(!RM)await play(620,tt=>{const e=HAND(tt/620),pt=arcPoint({x:r0.left+r0.width/2,y:r0.top+r0.height/2},{x:dest.left+dest.width/2,y:dest.top+dest.height/2},e,-.2);
+    card.style.transform=`translate(${pt.x-(r0.left+r0.width/2)}px,${pt.y-(r0.top+r0.height/2)}px) scale(${lerp(1,.12,e)})`});
+  ov.remove();paintCards(lv);const tr=$('.trainer');if(tr&&!RM){tr.classList.remove('cf-land');void tr.offsetWidth;tr.classList.add('cf-land')}}

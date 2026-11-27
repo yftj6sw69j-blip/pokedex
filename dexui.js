@@ -86,7 +86,7 @@ function scrollsX(el){for(let n=el;n&&n!==document.body;n=n.parentElement){
 function swipeTarget(){
   if(catching||busy)return null;
   if(open)return open.side!=null?{kind:'card',el:hero}:null;
-  if(document.querySelector('.stage.on,#welcome,#celeb:not([hidden]),#scanner:not([hidden])'))return null;
+  if(document.querySelector('.stage.on,#welcome,#celeb:not([hidden]),#scanner:not([hidden]),.lvreveal'))return null;
   const sh=$('#sheet');if(sh&&!sh.hidden)return {kind:'sheet',el:sheetStack.length>1?sh.querySelector('.sh-body'):sh};
   if(cur===1)return {kind:'gen',el:$('#grid')};
   return {kind:'tab',el:$(VIEWS[cur])}}
