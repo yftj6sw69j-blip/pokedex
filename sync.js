@@ -2,13 +2,13 @@
 /* Family sync: one secret code links every device in the family to the same collection.
    The code never leaves the device in plain form on the server side (the database stores a sha256 of it)
    and the app can only reach two functions, never the table. Photos stay on the device that took them. */
-const SYNC_URL='',SYNC_KEY=''; // Supabase project URL and publishable (anon) key, both safe to ship in a web app
+const SYNC_URL='https://ypjsenxoegsfiadquwle.supabase.co',SYNC_KEY='sb_publishable_Sov6Yp2802dT1qNLrIeH5w_64uAL-tU'; // Supabase project URL and publishable (anon) key, both safe to ship in a web app
 const SKEY='pokedex.sync.v1';
 let sync={code:'',at:''},syncTimer=0,syncBusy=false;
 try{sync={...sync,...JSON.parse(localStorage.getItem(SKEY)||'{}')}}catch(e){}
 const syncOn=()=>!!(SYNC_URL&&SYNC_KEY);
 function saveSync(){try{localStorage.setItem(SKEY,JSON.stringify(sync))}catch(e){}}
-async function rpc(fn,body){const r=await fetch(`${SYNC_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'content-type':'application/json',apikey:SYNC_KEY,authorization:'Bearer '+SYNC_KEY},body:JSON.stringify(body)});
+async function rpc(fn,body){const r=await fetch(`${SYNC_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'content-type':'application/json',apikey:SYNC_KEY},body:JSON.stringify(body)});
   if(!r.ok)throw new Error('sync '+r.status);return r.json()}
 const WORDS=['pika','char','bulba','squirt','eevee','snor','gengar','lucario','mew','onix','abra','jolt','vapor','flare','umbre','espeon','togepi','psy','geo','zubat','oddish','ditto','lapras','dratini'];
 function newCode(){const a=new Uint32Array(4);crypto.getRandomValues(a);return `${WORDS[a[0]%WORDS.length]}-${WORDS[a[1]%WORDS.length]}-${WORDS[a[2]%WORDS.length]}-${String(a[3]%10000).padStart(4,'0')}`}
