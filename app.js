@@ -152,10 +152,12 @@ function parseQuery(q){q=q.trim();const m=q.match(/^#?\s*([A-Za-z]{0,4}\d{1,4}[A
   const n=parseInt(q.replace(/^#/,''),10);if(/^#?\d+$/.test(q)&&byNo(n))return {kind:'dex',no:n};
   const low=q.toLowerCase();const exact=DEX.find(p=>p.name.toLowerCase()===low);const p=exact||DEX.find(p=>p.name.toLowerCase().startsWith(low))||DEX.find(p=>p.name.toLowerCase().includes(low));
   return p?{kind:'dex',no:p.no}:{kind:'none'}}
-async function tcg(q){const url=`${TCG}?q=${encodeURIComponent(q)}&orderBy=-set.releaseDate&pageSize=60&select=id,name,number,rarity,images,set,nationalPokedexNumbers,supertype`;
-  const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),15000);
-  try{const r=await fetch(url,{signal:ctl.signal});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();return (j.data||[]).filter(c=>c.supertype==='Pokémon'&&c.nationalPokedexNumbers?.length)}
-  finally{clearTimeout(to)}}
+// the card library can be slow to wake up: allow 30 s, and try a second time before giving up
+async function tcg(q,tries=2){const url=`${TCG}?q=${encodeURIComponent(q)}&orderBy=-set.releaseDate&pageSize=60&select=id,name,number,rarity,images,set,nationalPokedexNumbers,supertype`;
+  for(let i=1;;i++){const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),30000);
+    try{const r=await fetch(url,{signal:ctl.signal});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();return (j.data||[]).filter(c=>c.supertype==='Pokémon'&&c.nationalPokedexNumbers?.length)}
+    catch(e){if(i>=tries)throw e;$('#resTitle').textContent='Still looking… the card library is waking up'}
+    finally{clearTimeout(to)}}}
 function cardTile(c,i){const p=byNo(c.nationalPokedexNumbers[0]);const own1=has(p?.no);const t=tierOf(c.rarity);
   return `<button class="pick" data-i="${i}" aria-label="${esc(c.name)}, ${esc(c.set.name)} ${esc(c.number)}/${esc(c.set.printedTotal)}">
    <span class="pimg"><img src="${esc(c.images.small)}" alt="" loading="lazy" decoding="async"><span class="ball sm" aria-hidden="true"></span></span>
