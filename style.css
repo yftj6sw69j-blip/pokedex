@@ -702,4 +702,58 @@ body.sheet-open{overflow:hidden}
 .bt-adv{grid-column:1/-1;text-align:center;color:var(--gold1);margin:4px 0 0}
 #btAfter .cta{margin-top:14px}
 .steps{margin:0 0 10px;padding-left:20px;color:var(--muted);font-size:14px;display:grid;gap:6px}.steps b{color:var(--fg)}
+/* ---------- Pokédex selectors: region cards, status switch, type orbs ---------- */
+.regions{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 16px;margin:2px -16px 10px;padding:6px 16px 10px;scrollbar-width:none;overscroll-behavior-x:contain}
+.regions::-webkit-scrollbar{display:none}
+.rcard{flex:none;width:156px;height:112px;border-radius:20px;position:relative;overflow:hidden;scroll-snap-align:start;text-align:left;isolation:isolate;
+  background:var(--panel);border:1px solid color-mix(in oklab,var(--c) 30%,var(--line));
+  transform:scale(.94);transition:transform var(--sp-snap-ms) var(--sp-snap),border-color .2s,box-shadow var(--sp-snap-ms) var(--sp-snap)}
+.rc-bg{position:absolute;inset:0;z-index:-1;background:radial-gradient(120% 90% at 100% 0%,color-mix(in oklab,var(--c) 55%,transparent),transparent 62%),linear-gradient(160deg,var(--d),#0c0e17 80%);
+  filter:saturate(.55) brightness(.8);transition:filter var(--sp-snap-ms) var(--sp-snap)}
+.rc-bg::after{content:"";position:absolute;right:-26px;bottom:-30px;width:110px;height:110px;border-radius:50%;
+  background:radial-gradient(circle,transparent 21px,#ffffff14 22px 25px,transparent 26px),linear-gradient(transparent 48%,#ffffff14 48% 52%,transparent 52%);border:3px solid #ffffff14}
+.rc-gen{position:absolute;left:12px;top:10px;font:800 10px var(--display);letter-spacing:.14em;color:var(--c);background:#0007;padding:3px 7px;border-radius:99px}
+.rc-name{position:absolute;left:12px;top:54px;font:700 19px/1 var(--display);letter-spacing:-.02em;color:#fff;text-shadow:0 2px 10px #0009}
+.rc-arts{position:absolute;right:4px;top:6px;display:flex;flex-direction:row-reverse}
+.rc-arts img{width:38px;height:38px;object-fit:contain;margin-left:-12px;filter:drop-shadow(0 3px 4px #0008);transform:translateY(calc(var(--k) * 7px)) scale(.9);transition:transform var(--sp-lift-ms) var(--sp-lift)}
+.rc-arts img.sil{filter:brightness(0) drop-shadow(0 0 1px #ffffff55);opacity:1}
+.rc-prog{position:absolute;left:12px;right:12px;bottom:10px;display:flex;align-items:center;gap:8px;font:600 11px var(--display);color:#ffffffb0;font-variant-numeric:tabular-nums}
+.rc-prog b{color:#fff}
+.rc-bar{flex:1;height:6px;border-radius:9px;background:#ffffff1c;overflow:hidden}
+.rc-bar i{display:block;height:100%;width:100%;border-radius:inherit;background:linear-gradient(90deg,var(--c),#fff);transform-origin:left;transform:scaleX(var(--p));transition:transform var(--sp-lift-ms) var(--sp-lift)}
+.rcard[aria-pressed="true"]{transform:scale(1);border-color:var(--c);box-shadow:0 10px 30px -10px var(--c),inset 0 0 0 1px #ffffff22}
+.rcard[aria-pressed="true"] .rc-bg{filter:none}
+.rcard[aria-pressed="true"] .rc-arts img{transform:translateY(calc(var(--k) * 5px - 4px)) scale(1.06)}
+.rcard[aria-pressed="true"] .rc-arts img:nth-child(2){transition-delay:40ms}
+.rcard[aria-pressed="true"] .rc-arts img:nth-child(3){transition-delay:80ms}
+.rcard:active{transform:scale(.9)}
+
+.dexctl{display:block;margin-bottom:10px}
+.seg{position:relative;display:grid;grid-template-columns:repeat(4,1fr);padding:4px;border-radius:16px;background:#0b0d16;border:1px solid var(--line);margin-bottom:12px}
+.seg-thumb{position:absolute;left:0;top:4px;bottom:4px;border-radius:12px;background:linear-gradient(180deg,#2a3150,#1d2238);box-shadow:inset 0 1px 0 #ffffff22,0 6px 16px -6px #000;
+  transition:transform var(--sp-snap-ms) var(--sp-snap),width var(--sp-snap-ms) var(--sp-snap)}
+.seg-b{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px 6px;border-radius:12px;color:var(--muted);font:600 11.5px var(--display);transition:color .15s}
+.seg-b svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform var(--sp-snap-ms) var(--sp-snap)}
+.seg-b em{font-style:normal;font-size:10px;font-variant-numeric:tabular-nums;opacity:.7}
+.seg-b[aria-checked="true"]{color:#fff}
+.seg-b[aria-checked="true"] svg{transform:scale(1.12) translateY(-1px);stroke:var(--glow,#ff4656)}
+.seg-b:active svg{transform:scale(.86)}
+
+.torbs{display:flex;gap:4px;overflow-x:auto;margin:-4px -16px 0;padding:9px 16px 6px;scrollbar-width:none;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+.torbs::-webkit-scrollbar{display:none}
+.torb{flex:none;width:54px;display:flex;flex-direction:column;align-items:center;gap:4px;scroll-snap-align:center}
+.to-orb{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:20px;line-height:1;
+  background:radial-gradient(circle at 35% 30%,color-mix(in oklab,var(--c) 85%,#fff),var(--c) 45%,var(--d) 100%);
+  box-shadow:inset 0 -3px 6px #0006,inset 0 2px 3px #ffffff55,0 4px 10px -4px #000;
+  transition:transform var(--sp-snap-ms) var(--sp-snap),box-shadow var(--sp-snap-ms) var(--sp-snap),filter .2s}
+.to-l{font:600 10.5px var(--display);color:var(--muted);transition:color .15s}
+.torb:active .to-orb{transform:scale(.86)}
+.dexctl.typed .torb .to-orb{filter:saturate(.35) brightness(.7)}
+.dexctl.typed .torb[aria-pressed="true"] .to-orb{filter:none;transform:scale(1.14);box-shadow:inset 0 -3px 6px #0006,inset 0 2px 3px #ffffff66,0 0 0 2px var(--stage),0 0 0 4px var(--c),0 8px 22px -4px var(--c)}
+.dexctl.typed .torb[aria-pressed="true"] .to-l{color:#fff}
+
+.rowctl select{border-radius:999px;padding:8px 30px 8px 14px;appearance:none;-webkit-appearance:none;
+  background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239aa2b9' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 10px center/14px}
+#sheet{box-shadow:-20px 0 40px -20px #000}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
