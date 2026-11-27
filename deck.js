@@ -45,6 +45,7 @@ challengeHTML=function(compact){const S=challengeState(),d=daysLeft(),done=S.fil
     setTimeout(()=>{s.style.zIndex=0;s.style.transition='transform 520ms var(--glide)';s.style.transform=slot(order.length-1);
       setTimeout(()=>{s.style.transition='';lay()},540)},230)}
   window.tdDeckNext=dir=>flingOut(dir||-1);
+  window.tdDeckFront=el=>{syncOrder();const i=order.indexOf(el);if(i>0){order.splice(i,1);order.unshift(el);lay()}};
 
   // drag the top card
   let D=null,eatClick=false;
