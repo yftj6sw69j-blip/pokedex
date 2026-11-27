@@ -33,7 +33,7 @@ function openBattles(){openSheet('Card battles',body=>{const mine=DEX.filter(p=>
    <div class="rivals">${RIVALS.map((r,i)=>{const ok=unlocked(i)&&mine.length>=3,won=BT.beaten.includes(r.id);
      return `<button class="rival ${won?'won':''}" data-rival="${i}" ${ok?'':'disabled'} style="--rc:${r.col}"><img src="${ART(r.pic)}" alt=""><div class="tx"><div class="t1">${r.name}</div><div class="t2">${r.lv}${won?' · beaten ✓':''}</div></div><span class="tro ${won?'gold':'none'}">${ok?(won?'Rematch':'Battle!'):'🔒'}</span></button>`}).join('')}</div>
    <div class="sec">How to win</div><div class="rules">
-     <div><span>Type advantage (like Water against Fire)</span><b>×1.5</b></div><div><span>Your rare card</span><b>+10%</b></div><div><span>Your ultra rare card</span><b>+25%</b></div>
+     <div><span>Type advantage (like Water against Fire)</span><b>Much stronger</b></div><div><span>Your rare card</span><b>A bit stronger</b></div><div><span>Your ultra rare card</span><b>Stronger</b></div>
      <div><span>Win a battle</span><b>+${BATTLE_XP} XP</b></div><div><span>Beat the Champion</span><b>+${CHAMP_XP} XP</b></div></div>
    <p class="hint">Battle XP is up to ${BATTLE_CAP} a day. ${BT.wins} battles won so far.</p>`;
   body.addEventListener('click',e=>{const b=e.target.closest('[data-rival]');if(b&&!b.disabled)pickTeam(+b.dataset.rival)})})}
@@ -58,7 +58,7 @@ function startBattle(ri,team){const r=RIVALS[ri];B={ri,r,team,foe:rivalTeam(r),r
     <div class="bt-stats" id="btStats"></div><div id="btAfter"></div>`;
     nextRound(body)})}
 function cardFace(p,mine){const c=tc(p.types[0]),o=mine?topCard(p.no):null,b=mine?boost(p.no):1;
-  return `<div class="bc-in" style="--c:${c[0]};--d:${c[1]}"><div class="fx fx-${c[2]}"></div>${b>1?`<span class="bc-boost">${b===1.25?'ULTRA +25%':'RARE +10%'}</span>`:''}
+  return `<div class="bc-in" style="--c:${c[0]};--d:${c[1]}"><div class="fx fx-${c[2]}"></div>${b>1?`<span class="bc-boost">${b===1.25?'ULTRA POWER UP':'RARE POWER UP'}</span>`:''}
    <img src="${ART(p.no)}" alt=""><b>${esc(p.name)}</b><span class="bc-types">${p.types.map(t=>tc(t)[3]).join(' · ')}</span></div>`}
 async function nextRound(body){const me=byNo(B.team[B.round]),foe=byNo(B.foe[B.round]),bm=body.querySelector('#bMe'),bf=body.querySelector('#bFoe');
   body.querySelector('#btRound').textContent=B.round+1;body.querySelector('#btAfter').innerHTML='';body.querySelector('#btSay').textContent=`${me.name} is ready! Pick a stat.`;

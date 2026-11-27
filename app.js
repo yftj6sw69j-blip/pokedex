@@ -87,7 +87,7 @@ function albums(){const score=(name,key,all)=>{const h=all.filter(p=>has(p.no)).
   const set=Object.entries(sets).filter(([,s])=>s.total).map(([sid,s])=>({id:'set:'+sid,setId:sid,name:s.name,key:(typeof setKey==='function'?setKey(sid):'water'),all:[],have:Math.min(s.nums.size,s.total),tot:s.total,p:Math.min(1,s.nums.size/s.total),isSet:true})).sort((a,b)=>b.p-a.p);
   return {gen,type,mini,set}}
 const tier=p=>p>=1?'gold':p>=.5?'silver':p>=.1?'bronze':'none';
-const tierLabel={gold:'Gold',silver:'Silver',bronze:'Bronze',none:'Locked'};
+const tierLabel={gold:'Gold',silver:'Silver',bronze:'Bronze',none:'Not yet'};
 function albumRow(a){const c=tc(a.key);const miss=a.isSet?[]:a.all.filter(p=>!has(p.no)).map(p=>p.name);
   return `<button class="album" data-album="${a.id}" style="--p:${a.p}"><div class="ic fill ${a.id.startsWith('gen:')?'region r'+a.id.slice(4):''}" style="--c:${c[0]};--d:${c[1]};background:radial-gradient(circle at 50% 40%,${c[0]},${c[1]} 80%)"><div class="fx fx-${c[2]}"></div>${a.isSet?`<img class="setlogo" src="https://images.pokemontcg.io/${esc(a.setId)}/symbol.png" alt="" loading="lazy" onerror="this.remove()">`:''}</div>
   <div class="tx"><div class="t1">${esc(a.name)}</div><div class="t2">${a.have} of ${a.tot}${miss.length&&miss.length<=2?' · needs '+miss.map(esc).join(' and '):''}</div>

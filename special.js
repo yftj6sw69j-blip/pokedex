@@ -45,7 +45,7 @@ function tradePlan(){const S=spares().map(c=>({...c,v:cardVal(c)})).sort((a,b)=>
   W.sort((a,b)=>wantVal(a)-wantVal(b)).forEach(p=>{const need=wantVal(p);const s=S.find(c=>!used.has(c.id)&&c.v>=need&&c.v<=need+1)||null;if(s){used.add(s.id);pairs.push({p,s,need})}else pairs.push({p,s:null,need,over:S.some(c=>!used.has(c.id)&&c.v>need+1)})});
   return {S,W,pairs}}
 function betterSpares(){const out=[];for(const n in own){const L=own[n];if(L.length<2)continue;const k=Math.min(fav[n]||0,L.length-1),kv=cardVal(L[k]);
-  L.forEach((c,i)=>{if(i!==k&&cardVal(c)>kv)out.push({no:+n,i,c})})}return out}
+  let best=null;L.forEach((c,i)=>{if(i!==k&&cardVal(c)>kv&&(!best||cardVal(c)>cardVal(best.c)))best={no:+n,i,c}});if(best)out.push(best)}return out}
 const thumb=(c,no)=>c.photo||c.img?`<img src="${c.photo||esc(c.img)}" alt="">`:`<img class="partart" src="${ART(no)}" alt="">`;
 openSpares=function(){openSheet('Trade helper',body=>{const {S,W,pairs}=tradePlan(),B=betterSpares();
   const g=typeof goalOf==='function'?goalOf():null,ideas=g&&!g.a.isSet?g.a.all.filter(p=>!has(p.no)&&!wish[p.no]).slice(0,4):[];

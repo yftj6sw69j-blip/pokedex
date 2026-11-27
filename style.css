@@ -1065,6 +1065,7 @@ body.sheet-open{overflow:hidden}
 .td-deck .td-slide.back{filter:brightness(.62) saturate(.8);pointer-events:none}
 .td-deck .td-slide.back>*>*{box-shadow:none}
 .td-deck .td-slide.top{box-shadow:0 14px 30px #0008;border-radius:22px}
+.td-deck .td-slide>*{height:100%;box-sizing:border-box}.td-deck .td-slide>*>*{height:100%!important;box-sizing:border-box}
 .td-deck.drag .td-slide{transition:none}
 .td-deck.drag .td-slide.top{cursor:grabbing}
 .td-deck.measuring .td-slide{height:auto}
@@ -1149,4 +1150,35 @@ body.sheet-open{overflow:hidden}
 .vr-row img{width:44px;height:44px;object-fit:contain}.vr-row>span:nth-child(2){flex:1;display:grid}.vr-row b{font:700 14px var(--display)}.vr-row small{font-size:12px;color:var(--muted)}
 .vr-rb{font-size:22px}
 .pc-cert{grid-column:auto}.pc-ver{background:linear-gradient(150deg,#7b3cff,#2a1858)}.pc-ver::before{content:"🗂️"}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rm-a,.hf-card,.cert,.ct-seal,.sg-chip,.wk2-stamp{transform:none!important;clip-path:none!important}}
+.vr-shelf{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 12px;scrollbar-width:none;
+  background:linear-gradient(transparent calc(100% - 14px),#6b4a1f calc(100% - 14px),#3d2a10);border-radius:0 0 8px 8px}
+.vr-shelf::-webkit-scrollbar{display:none}
+.vr-medal{flex:none;width:92px;display:grid;justify-items:center;gap:1px;text-align:center;transition:transform var(--sp-snap-ms) var(--sp-snap)}
+.vr-medal:active{transform:scale(.94)}
+.vr-mi{position:relative;width:70px;height:70px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 40% 35%,#ffffff22,#ffffff08);box-shadow:inset 0 0 0 2px #ffcf3a66}
+.vr-mi img{width:58px;height:58px;object-fit:contain}
+.vr-mi i{position:absolute;right:-4px;bottom:-2px;font-size:26px;font-style:normal;animation:stamp var(--sp-snap-ms) var(--sp-snap)}
+.vr-medal.off .vr-mi{box-shadow:inset 0 0 0 2px #ffffff1f}.vr-medal.off .vr-mi i{position:static;filter:grayscale(1) brightness(.6)}
+.vr-medal b{font:700 12px var(--display);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vr-medal small{font-size:10.5px;color:var(--gold1)}
+.vr-medal.off b{color:var(--muted)}.vr-medal.off small{color:var(--dim)}
+/* ---------- value.js ---------- */
+.vl{display:grid;gap:5px;--rb:#9aa2b9}
+.vl.rb-green{--rb:#3ddc84}.vl.rb-blue{--rb:#4aa8ff}.vl.rb-purple{--rb:#b084ff}.vl.rb-gold{--rb:#ffcf3a}.vl.rb-teal{--rb:#2fd3c4}
+.vl-r{display:flex;align-items:center;gap:6px;font:700 12px var(--display);color:var(--rb)}
+.vl-r i{flex:1;max-width:46px;height:6px;border-radius:9px;background:var(--rb);box-shadow:0 0 8px color-mix(in oklab,var(--rb) 60%,transparent);order:-1}
+.vl.rb-gold .vl-r i{background:linear-gradient(90deg,#fff3b0,#ffcf3a,#e9a800,#fff3b0);background-size:200% 100%;animation:holoBg var(--L,6s) linear infinite}
+.vl-v{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);overflow:hidden}
+.vl-v em{font-style:normal}
+.vl-coins{font-size:13px;letter-spacing:-2px}.vl-coins i{font-style:normal;filter:grayscale(1) brightness(.45)}
+.vl-gbp{font:800 13px var(--display);color:var(--fg)}
+.vl-in{animation:rise var(--sp-snap-ms) var(--sp-snap)}
+.vl-row{margin:10px 0 2px;padding:10px 12px;border-radius:14px;background:#ffffff0a;border:1px solid #ffffff12}
+.vl-row .mch{margin-bottom:6px}
+.vr-t .vl{justify-items:center;margin-top:2px}.vr-t .vl-r{font-size:10px}.vr-t .vl-r i{max-width:none;width:100%}
+.vr-t .vl-r{width:100%;flex-direction:column;gap:2px}
+.vr-t .vl-v{justify-content:center;flex-direction:column;gap:1px;font-size:10px}.vr-t .vl-coins{font-size:10px}.vr-t .vl-gbp{font-size:11px}
+.vl-sw{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:14px;background:var(--panel);margin-bottom:6px}
+.vl-sw input{width:22px;height:22px;margin-top:2px;accent-color:#3ddc84}
+.vl-sw span{display:grid}.vl-sw small{color:var(--muted);font-size:12px}
+.td-deck .td-slide{padding:0!important;margin:0!important}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rm-a,.hf-card,.cert,.ct-seal,.sg-chip,.wk2-stamp,.vl-in{transform:none!important;clip-path:none!important}}
