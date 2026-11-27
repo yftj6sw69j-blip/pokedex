@@ -1,6 +1,6 @@
 // Offline support: app files network-first (so updates arrive), pictures cache-first.
-const APP='pokedex-app-v3',IMG='pokedex-img-v1';
-const SHELL=['./','index.html','style.css?v=3','app.js?v=3','features.js?v=3','dex.txt?v=1','flavor.txt?v=1','icon.svg','manifest.webmanifest'];
+const APP='pokedex-app-v4',IMG='pokedex-img-v1';
+const SHELL=['./','index.html','style.css?v=3','app.js?v=3','features.js?v=4','sync.js?v=4','dex.txt?v=1','flavor.txt?v=1','icon.svg','manifest.webmanifest'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(APP).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>![APP,IMG].includes(k)).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET')return;

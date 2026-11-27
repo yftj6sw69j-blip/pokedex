@@ -251,10 +251,11 @@ function openGrownups(){const a=6+Math.floor(Math.random()*4),b=6+Math.floor(Mat
 function parentBody(body){const L=allCards();
   body.innerHTML=`<div class="sec">Backup</div><p class="hint">${lastBackup?'Last backup: '+new Date(lastBackup).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'No backup saved yet.'} The collection lives only on this device, so save a backup file now and then (for example to iCloud Drive or Google Drive).</p>
    <div class="backup"><button class="photo-btn" id="pExport">Save a backup file</button><label class="ghost">Load a backup file<input type="file" accept="application/json,.json" id="pImport"></label></div>
+   ${typeof syncSection==='function'?syncSection():''}
    <div class="sec">Fix a mistake</div><p class="hint">Added a card by accident? Remove it here.</p>
    <div class="rmlist">${L.slice(0,200).map(c=>`<div class="rm"><img src="${c.photo||esc(c.img)||ART(c.no)}" alt=""><span><b>${esc(c.name)}</b><br><small>${esc(c.set)}${c.number?' · '+esc(c.number):''}</small></span><button class="ghost rm-btn" data-rm="${c.no}:${esc(c.id)}">Remove</button></div>`).join('')||'<p class="hint">No cards yet.</p>'}</div>
    <div class="sec">Start again</div><p class="hint">Deletes every card, pack and photo on this device. Save a backup first.</p><button class="ghost danger" id="pReset">Delete everything</button>
-   <div class="sec">About</div><p class="hint">Pokémon details and artwork from PokéAPI. Card pictures and data from the Pokémon TCG API. Pokémon and all related names are trademarks of Nintendo, Creatures and GAME FREAK. This is a private, non-commercial family app. No ads, no purchases, no chat, and nothing about your child leaves this device.</p>`;
+   <div class="sec">About</div><p class="hint">Pokémon details and artwork from PokéAPI. Card pictures and data from the Pokémon TCG API. Pokémon and all related names are trademarks of Nintendo, Creatures and GAME FREAK. This is a private, non-commercial family app. No ads, no purchases, no chat, and nothing about your child leaves this device unless you turn on family sync.</p>`;
   body.querySelector('#pExport').addEventListener('click',exportBackup);
   body.querySelector('#pImport').addEventListener('change',importBackup);
   body.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(b){if(!b.classList.contains('sure')){b.classList.add('sure');b.textContent='Yes, remove';return}
@@ -278,4 +279,4 @@ function initFeatures(){load2();
   if(!navigator.mediaDevices?.getUserMedia)$('#scanBtn').hidden=true;
   applyProfile();
   if(!prof.onboarded&&!Object.keys(own).length)startWelcome();else if(!prof.onboarded){prof.onboarded=true;save2()}
-  snapTiers()}
+  snapTiers();if(typeof initSync==='function')initSync()}
