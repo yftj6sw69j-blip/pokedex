@@ -232,12 +232,14 @@ async function openTile(el){if(open||busy)return;busy=true;const p=byNo(+el.data
   const a={x:r.left+r.width/2,y:r.top+r.height/2};open={el,p,a,w:r.width,h:r.height};
   paint(p);stage.style.setProperty('--ox',a.x+'px');stage.style.setProperty('--oy',a.y+'px');
   hero.hidden=false;el.style.visibility='hidden';setHero(a.x,a.y,r.width,r.height,16);stage.classList.add('on');
-  const D=700,F0=260,flipTo=has(p.no)?0:180; // owned: land face-up showing the real card; missing: flip to the info side
+  const D=700,F0=260,flipTo=0; // always land face-up; a missing Pokémon stays a silhouette (no peeking at its name)
   await play(D+380,t=>{const s=t/1000,u=clamp01(t/D),p1=springX(s,SP.lift.T,SP.lift.b)+antic(u)*(1-u);
     const pt=arcPoint(a,C,clamp01(p1),.18);setHero(pt.x,pt.y,lerp(r.width,C.w,p1),lerp(r.height,C.h,p1),lerp(16,14,clamp01(p1)),1,0,flipTo*springX(Math.max(0,s-F0/1000),SP.settle.T,0))});
   open.side=flipTo;const h=$('#closeHint');h.textContent='Tap the card to turn it over · tap outside to put it back';h.hidden=false;busy=false}
-async function turnCard(){if(!open||busy)return;busy=true;const C=cardRect(),from=open.side,to=from?0:180;
+async function turnCard(){if(!open||busy)return;if(!has(open.p.no)){mystery();return}busy=true;const C=cardRect(),from=open.side,to=from?0:180;
   await play(560,t=>{setHero(C.x,C.y,C.w,C.h,14,1,0,lerp(from,to,springX(t/1000,SP.settle.T,0)))});open.side=to;busy=false}
+function mystery(){const h=$('#closeHint');h.textContent='Catch this Pokémon to turn its card over!';h.hidden=false;
+  if(!RM)hero.animate([{translate:'0 0'},{translate:'-12px 0'},{translate:'9px 0'},{translate:'-4px 0'},{translate:'0 0'}],{duration:380,easing:'cubic-bezier(0.2,0,0,1)'})}
 async function closeTile(){if(!open||busy)return;busy=true;$('#closeHint').hidden=true;const {a,w,h,side,p}=open,C=cardRect();
   const el=open.el.isConnected?open.el:($(`.tile[data-no="${p.no}"]`)||open.el);stage.classList.remove('on');
   await play(620,t=>{const u=t/620,e=HAND(u),fl=1-HAND(clamp01(u/0.7));const pt=arcPoint(C,a,e,-.18);setHero(pt.x,pt.y,lerp(C.w,w,e),lerp(C.h,h,e),lerp(14,16,e),1,0,side*fl)});

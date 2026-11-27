@@ -87,7 +87,7 @@ function swipeTarget(){
   if(catching||busy)return null;
   if(open)return open.side!=null?{kind:'card',el:hero}:null;
   if(document.querySelector('.stage.on,#welcome,#celeb:not([hidden]),#scanner:not([hidden])'))return null;
-  const sh=$('#sheet');if(sh&&!sh.hidden)return {kind:'sheet',el:sh};
+  const sh=$('#sheet');if(sh&&!sh.hidden)return {kind:'sheet',el:sheetStack.length>1?sh.querySelector('.sh-body'):sh};
   if(cur===1)return {kind:'gen',el:$('#grid')};
   return {kind:'tab',el:$(VIEWS[cur])}}
 addEventListener('touchstart',e=>{if(e.touches.length!==1){SW.on=false;return}const t=e.touches[0];
@@ -116,15 +116,26 @@ addEventListener('touchend',()=>{if(!SW.on||SW.lock!==1){SW.on=false;return}SW.o
   if(tg.kind==='sheet'){swipeCloseSheet(tg.el,x);return}
   if(tg.kind==='gen'&&!genEnd(dx)){const g=GEN_ORDER[GEN_ORDER.indexOf(gen)+dir];tap();setGen(g,dir,x);return}
   tap();if(tg.kind==='gen'){const v=$(VIEWS[cur]);tg.el.style.transition='none';tg.el.style.transform='';v.style.transform=`translateX(${x}px)`}
-  tg.el.style.transition='';go(cur+dir)});
+  swipeGo(cur+dir,dir,x)});
+async function swipeGo(i,dir,x){if(RM){go(i);return}busy=true;const o=$(VIEWS[cur]),n=$(VIEWS[i]);if(typeof onTab==='function')onTab(i,cur);
+  document.querySelectorAll('.tab').forEach(t=>{if(+t.dataset.tab===i)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});
+  $('#app').style.setProperty('--glow',GLOWS[i]);const W=Math.min(innerWidth,$('#app').clientWidth);
+  // the old page keeps travelling the way the finger went; the new page rides in beside it
+  o.style.transition='transform 260ms var(--exit)';o.style.transform=`translateX(${-dir*W}px)`;
+  const sy=scrollY;n.hidden=false;n.style.transition='none';n.style.clipPath='';n.style.position='relative';n.style.top=sy+'px'; // sits where the eye is, even if the old page was scrolled
+  n.style.translate=`${dir*W+x}px 0`;n.classList.remove('rise');void n.offsetWidth;
+  n.classList.add('rise');n.style.transition='translate var(--sp-lift-ms) var(--sp-lift)';n.style.translate='0 0';
+  await wait(260);o.hidden=true;o.style.cssText='';n.style.top='';scrollTo({top:0});cur=i;busy=false;
+  setTimeout(()=>{if(cur===i){n.style.transition='';n.style.translate='';n.style.position=''}},420)}
 addEventListener('touchcancel',()=>{if(SW.on&&SW.lock===1){if(SW.tg.kind==='card')cardBack();else snapBack(SW.tg.el)}SW.on=false});
 
 /* ---------- swipe through Pokémon while a card is open ---------- */
 function cardList(){return open&&open.el&&open.el.closest&&open.el.closest('#grid')?listFor():DEX.slice().sort((a,b)=>a.no-b.no)}
 function cardBack(){hero.style.transition='translate var(--sp-snap-ms) var(--sp-snap), rotate var(--sp-snap-ms) var(--sp-snap)';hero.style.translate='0 0';hero.style.rotate='0deg';
   setTimeout(()=>{hero.style.transition='';hero.style.translate='';hero.style.rotate=''},360)}
+let cardTok=0;
 async function nextCard(dir){const L=cardList(),p=L[L.indexOf(open.p)+dir];if(!p){cardBack();return}busy=true;tap();
-  const C=cardRect(),flipTo=has(p.no)?0:180;
+  const C=cardRect(),flipTo=0,tok=++cardTok;
   if(RM){paint(p);setHero(C.x,C.y,C.w,C.h,14,1,0,flipTo);hero.style.translate='';hero.style.rotate=''}
   else{ // the card leaves on Exit, the next one arrives from the other side on LIFT
     hero.style.transition='translate 180ms var(--exit), rotate 180ms var(--exit)';hero.style.translate=`${-dir*innerWidth}px 0`;hero.style.rotate=`${-dir*12}deg`;await wait(180);
@@ -137,13 +148,25 @@ async function nextCard(dir){const L=cardList(),p=L[L.indexOf(open.p)+dir];if(!p
   if(inGrid){const t=$(`#grid .tile[data-no="${p.no}"]`);if(t){open.el.style.visibility='';t.style.visibility='hidden';
     const r0=t.getBoundingClientRect();if(r0.top<80||r0.bottom>innerHeight-110)scrollBy(0,r0.top-innerHeight/2+r0.height/2);
     const r=t.getBoundingClientRect();Object.assign(open,{el:t,a:{x:r.left+r.width/2,y:r.top+r.height/2},w:r.width,h:r.height})}}
-  setTimeout(()=>{hero.style.transition='';hero.style.translate='';hero.style.rotate='';busy=false},RM?0:300)}
-const _openTile=openTile;openTile=async function(el){await _openTile(el);const h=$('#closeHint');if(open&&h)h.textContent='Tap to turn it over · swipe for the next one · tap outside to put it back'};
+  hintFor(p);setTimeout(()=>{busy=false},RM?0:220); // ready for the next swipe straight away
+  setTimeout(()=>{if(tok===cardTok&&!SW.on){hero.style.transition='';hero.style.translate='';hero.style.rotate=''}},RM?0:680)}
+function hintFor(p){const h=$('#closeHint');if(!h||!open)return;h.hidden=false;h.textContent=has(p.no)?'Tap to turn it over · swipe for the next one':'Who\'s that Pokémon? Swipe for the next one'}
+const _openTile=openTile;openTile=async function(el){await _openTile(el);if(open)hintFor(open.p)};
 function snapBack(el){el.style.transition='transform var(--sp-snap-ms) var(--sp-snap)';el.style.transform='';setTimeout(()=>{el.style.transition=''},360)}
 async function swipeCloseSheet(s,x){
-  if(sheetStack.length>1){snapBack(s);closeSheet();return}
+  if(sheetStack.length>1){await sheetBack($('#sheet'));return}
   s.style.transition='transform 200ms var(--exit)';s.style.transform=`translateX(${innerWidth}px)`;await wait(200);
   s.style.transition='none';s.style.clipPath='inset(100% 0 0 0)';await closeSheet();s.style.transform=''}
+
+/* going back inside a sheet moves backwards: the page leaves to the right, the previous one returns from the left */
+async function sheetBack(s){const prev=sheetStack[sheetStack.length-2],body=s.querySelector('.sh-body'),W=innerWidth;
+  const swap=()=>{sheetStack.pop();s.querySelector('.sh-title').textContent=prev.title;body.innerHTML='';prev.render(body);s.scrollTop=0};
+  if(RM){swap();body.style.cssText='';return}
+  body.style.transition='transform 200ms var(--exit), clip-path 200ms var(--exit)';body.style.transform=`translateX(${W*.6}px)`;body.style.clipPath='inset(0 0 0 100%)';await wait(200);
+  swap();body.style.transition='none';body.style.clipPath='inset(0 100% 0 0)';body.style.transform='translateX(-28px)';void body.offsetWidth;
+  body.style.transition='clip-path var(--sp-lift-ms) var(--sp-lift), transform var(--sp-lift-ms) var(--sp-lift)';body.style.clipPath='inset(0 0 0 0)';body.style.transform='none';riseIn(body);
+  setTimeout(()=>{body.style.transition='';body.style.clipPath=''},640)}
+{const _csB=closeSheet;closeSheet=async function(all){const s=$('#sheet');if(!all&&s&&!s.hidden&&sheetStack.length>1)return sheetBack(s);return _csB(all)}}
 
 /* the Pokédex hint now teaches the swipe */
 (function(){const s=$('#v-dex .sub .mask>span');if(s)s.textContent='Swipe for the next region. Tap a Pokémon to flip its card.';
