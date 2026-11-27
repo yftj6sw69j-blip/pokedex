@@ -41,10 +41,10 @@ function centreIn(sc,el,smooth){if(!sc||!el)return;const x=el.offsetLeft-(sc.cli
 
 /* ---------- status switch + type orbs ---------- */
 renderFilters=function(){normFilt();const el=$('#filters');el.classList.remove('filters');el.classList.add('dexctl');
-  el.innerHTML=`<div class="seg" role="radiogroup" aria-label="Show"><span class="seg-thumb"></span>${STATUS.map(([k,l,ic])=>`<button class="seg-b" role="radio" data-st="${k}" aria-checked="${filt===k}">${ic}<span>${l}</span><em></em></button>`).join('')}</div>
+  el.innerHTML=`<div class="dseg" role="radiogroup" aria-label="Show"><span class="seg-thumb"></span>${STATUS.map(([k,l,ic])=>`<button class="seg-b" role="radio" data-st="${k}" aria-checked="${filt===k}">${ic}<span>${l}</span><em></em></button>`).join('')}</div>
    <div class="torbs" role="toolbar" aria-label="Type">${Object.keys(T).map(k=>`<button class="torb" data-ty="${k}" aria-pressed="${typeF===k}" style="--c:${T[k][0]};--d:${T[k][1]}"><span class="to-orb">${TYPE_IC[k]||'•'}</span><span class="to-l">${T[k][3]}</span></button>`).join('')}</div>`;
   el.classList.toggle('typed',!!typeF);syncSeg(true)};
-function syncSeg(instant){const seg=$('#filters .seg');if(!seg)return;normFilt();
+function syncSeg(instant){const seg=$('#filters .dseg');if(!seg)return;normFilt();
   const base=DEX.filter(p=>(!gen||p.gen===gen)&&(!typeF||p.types.includes(typeF)));
   const n={all:base.length,caught:base.filter(p=>has(p.no)).length,wish:base.filter(p=>wish[p.no]).length};n.missing=n.all-n.caught;
   seg.querySelectorAll('.seg-b').forEach(b=>{b.setAttribute('aria-checked',b.dataset.st===filt);b.querySelector('em').textContent=n[b.dataset.st]});
@@ -81,7 +81,7 @@ async function setGen(g,dir,fromX){if(gBusy)return;gBusy=true;gen=g;syncGens();
 /* ---------- swipe engine ---------- */
 const SW={on:false};
 function scrollsX(el){for(let n=el;n&&n!==document.body;n=n.parentElement){
-  if(n.matches&&n.matches('input,select,textarea,[data-noswipe],.binder,.covers,.fam-badges,.regions,.torbs,.seg'))return true;
+  if(n.matches&&n.matches('input,select,textarea,[data-noswipe],.binder,.covers,.fam-badges,.regions,.torbs,.dseg'))return true;
   const s=getComputedStyle(n);if((s.overflowX==='auto'||s.overflowX==='scroll')&&n.scrollWidth>n.clientWidth+2)return true}return false}
 function swipeTarget(){
   if(open||catching||busy)return null;
