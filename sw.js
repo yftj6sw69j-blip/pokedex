@@ -1,6 +1,6 @@
 // Offline support: app files network-first (so updates arrive), pictures cache-first.
-const APP='pokedex-app-v22',IMG='pokedex-img-v1';
-const SHELL=['./','index.html','style.css?v=20','app.js?v=9','features.js?v=7','sync.js?v=5','toolbar.js?v=9','polish.js?v=10','play.js?v=10','battle.js?v=11','dexui.js?v=6','extras.js?v=4','cardup.js?v=3','today.js?v=2','special.js?v=3','cert.js?v=3','suggest.js?v=1','deck.js?v=1','versions.js?v=3','value.js?v=1','vendor/qrcode.js?v=1','vendor/jsQR.js?v=1','dex.txt?v=1','flavor.txt?v=1','icon.svg','apple-touch-icon.png','icon-192.png','manifest.webmanifest'];
+const APP='pokedex-app-v23',IMG='pokedex-img-v1';
+const SHELL=['./','index.html','style.css?v=21','app.js?v=9','features.js?v=7','sync.js?v=5','toolbar.js?v=9','polish.js?v=10','play.js?v=10','battle.js?v=11','dexui.js?v=6','extras.js?v=4','cardup.js?v=3','today.js?v=2','special.js?v=3','cert.js?v=3','suggest.js?v=1','deck.js?v=1','versions.js?v=3','value.js?v=1','vault.js?v=1','vendor/qrcode.js?v=1','vendor/jsQR.js?v=1','dex.txt?v=1','flavor.txt?v=1','icon.svg','apple-touch-icon.png','icon-192.png','manifest.webmanifest'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(APP).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>![APP,IMG].includes(k)).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET')return;

@@ -1181,4 +1181,67 @@ body.sheet-open{overflow:hidden}
 .vl-sw input{width:22px;height:22px;margin-top:2px;accent-color:#3ddc84}
 .vl-sw span{display:grid}.vl-sw small{color:var(--muted);font-size:12px}
 .td-deck .td-slide{padding:0!important;margin:0!important}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rm-a,.hf-card,.cert,.ct-seal,.sg-chip,.wk2-stamp,.vl-in{transform:none!important;clip-path:none!important}}
+/* ---------- vault.js: Treasure vault ---------- */
+.pc-vault{background:linear-gradient(150deg,#e9a800,#5a2a00)}.pc-vault::before{content:"💎"}
+.pc-wheel{background:linear-gradient(150deg,#ff4656,#3a1d8a)}.pc-wheel::before{content:"🎡"}
+.vt-hero{display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;margin-bottom:12px;background:radial-gradient(120% 120% at 0 0,#ffcf3a44,transparent 60%),linear-gradient(150deg,#3a2600,#141734);border:1px solid #ffcf3a55}
+.vt-hero b{display:block;font:800 16px/1.2 var(--display)}.vt-hero small{color:var(--muted);font-size:12px}
+.vt-door{flex:none;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#2a2a2a 18%,transparent 19%),conic-gradient(from 0deg,#ffe27a,#b07800,#ffe27a,#b07800,#ffe27a);box-shadow:0 0 0 4px #00000055,0 0 20px #ffcf3a55;animation:spin calc(var(--L,6s)*3) linear infinite}
+.vt-q{display:flex;gap:8px;margin-bottom:12px}.vt-q .search{flex:1;min-width:0}
+.vt-load{animation:breathe calc(var(--L,6s)/3) linear infinite}
+.vt-pod{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;align-items:end;margin:6px 0 14px}
+.vt-pc{position:relative;display:grid;justify-items:center;gap:2px;text-align:center;min-width:0;clip-path:inset(100% 0 0 0);transform:translateY(30px);animation:hfIn var(--sp-lift-ms) var(--sp-lift) forwards}
+.vt-pc.p1{animation-delay:.12s}.vt-pc.p3{animation-delay:.24s}
+.vt-crown{font-size:22px;line-height:1}
+.vt-img{display:block;width:100%;aspect-ratio:63/88;border-radius:8px;overflow:hidden;box-shadow:0 10px 22px #000a}
+.vt-pc.p1 .vt-img{box-shadow:0 0 0 2px #ffcf3a,0 0 26px #ffcf3a88}
+.vt-img img{width:100%;height:100%;object-fit:cover;display:block}
+.vt-pc b{font:700 12px/1.2 var(--display);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vt-pc small{font:800 13px var(--display);color:var(--gold1)}
+.vt-step{display:block;width:100%;margin-top:4px;border-radius:10px 10px 4px 4px;font:900 18px/1 var(--display);font-style:normal;color:#1b1400;padding:8px 0;background:linear-gradient(#ffe27a,#c08a00)}
+.vt-pc.p1 .vt-step{padding:20px 0}.vt-pc.p2 .vt-step{padding:12px 0;background:linear-gradient(#f0f3fa,#8d97ad)}.vt-pc.p3 .vt-step{background:linear-gradient(#ffb27a,#9a4d17)}
+.vt-list{display:grid;gap:8px}
+.vt-row{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 6px;border-radius:16px;background:var(--panel)}
+.vt-row.mine{box-shadow:inset 0 0 0 2px #3ddc84}
+.vt-rank{flex:none;width:28px;text-align:center;font:800 14px var(--display);color:var(--muted)}
+.vt-th{flex:none;width:52px;border-radius:6px;overflow:hidden;transition:transform var(--sp-snap-ms) var(--sp-snap)}.vt-th:active{transform:scale(.94)}
+.vt-th img{width:100%;aspect-ratio:63/88;object-fit:cover;display:block;background:#0006}
+.vt-tx{flex:1;min-width:0;display:grid;gap:3px}.vt-tx b{font:700 14px/1.2 var(--display)}.vt-tx>small{font-size:11.5px;color:var(--muted)}
+.vt-mine{font:700 12px var(--display);font-style:normal;color:#3ddc84}.vt-dex{font-size:11.5px;font-style:normal;color:var(--gold1)}
+.vt-zoom{position:fixed;inset:0;z-index:300;display:grid;place-items:center;align-content:center;gap:12px;background:#05060ccc;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.vt-zoom img{width:min(78vw,360px);border-radius:16px;box-shadow:0 24px 60px #000;transform:scale(.6) translateY(40px);transition:transform var(--sp-lift-ms) var(--sp-lift)}
+.vt-zoom span{color:var(--muted);font-size:13px}
+.vt-zoom.on img{transform:none}.vt-zoom.off img{transform:scale(.6) translateY(40px);transition:transform 240ms var(--exit)}
+
+/* ---------- vault.js: Type wheel ---------- */
+.tw-stage{position:relative;width:320px;height:320px;margin:4px auto 6px}
+.tw-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:1;pointer-events:none}
+.tw-lines line{stroke-width:3;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1}
+.tw-lines line.win{stroke:#3ddc84}.tw-lines line.lose{stroke:#ff5a6a}
+.tw-lines.draw line{animation:twDraw 420ms var(--glide) forwards;animation-delay:calc(320ms + var(--i)*45ms)}
+.tw-lines.drawn line{stroke-dashoffset:0}
+@keyframes twDraw{to{stroke-dashoffset:0}}
+.tw-ring{position:absolute;inset:0;transform:rotate(var(--rot,0deg));transition:transform var(--sp-lift-ms) var(--sp-lift);z-index:2}
+.tw-ring.still{transition:none}
+.tw-orb{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,#ffffffaa,var(--c) 45%,var(--d));box-shadow:0 4px 10px #0008;transition:box-shadow .2s,scale var(--sp-snap-ms) var(--sp-snap)}
+.tw-orb span{font-size:19px;transform:rotate(calc(-1*var(--rot,0deg)));transition:transform var(--sp-lift-ms) var(--sp-lift)}
+.tw-ring.still .tw-orb span{transition:none}
+.tw-orb.on{scale:1.22;box-shadow:0 0 0 3px #fff,0 0 22px var(--c)}
+.tw-orb.win{box-shadow:0 0 0 3px #3ddc84,0 0 14px #3ddc8488}
+.tw-orb.lose{box-shadow:0 0 0 3px #ff5a6a,0 0 14px #ff5a6a88}
+.tw-ring:has(.tw-orb.on) .tw-orb:not(.on,.win,.lose){filter:saturate(.35) brightness(.6)}
+.tw-core{position:absolute;left:50%;top:50%;width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;z-index:3;display:grid;place-items:center;align-content:center;
+  background:radial-gradient(circle at 35% 30%,#ffffffcc,var(--c) 40%,var(--d));box-shadow:0 0 0 6px #0b0d16,0 0 40px var(--c)}
+.tw-core.pop{animation:burst var(--sp-snap-ms) var(--sp-snap)}
+.tw-big{font-size:34px;line-height:1}.tw-name{font:800 13px var(--display);color:#fff;text-shadow:0 1px 3px #0009}
+.tw-legend{display:flex;justify-content:center;gap:16px;font:700 12px var(--display);margin-bottom:10px}
+.tw-legend span::before{content:"";display:inline-block;width:18px;height:3px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.lg-win{color:#3ddc84}.lg-win::before{background:#3ddc84}.lg-lose{color:#ff5a6a}.lg-lose::before{background:#ff5a6a}
+.tw-facts{display:grid;gap:8px}
+.tw-f{padding:10px 12px;border-radius:16px;background:var(--panel);display:grid;gap:8px}
+.tw-f.win{box-shadow:inset 3px 0 0 #3ddc84}.tw-f.lose{box-shadow:inset 3px 0 0 #ff5a6a}.tw-f.none{box-shadow:inset 3px 0 0 #9aa2b9}
+.tw-f b{font:700 14px var(--display)}.tw-f>div{display:flex;flex-wrap:wrap;gap:6px}
+.tw-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px 5px 6px;border-radius:99px;font:700 12px var(--display);background:color-mix(in oklab,var(--c) 22%,#0000);box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--c) 60%,#0000);transition:transform var(--sp-snap-ms) var(--sp-snap)}
+.tw-chip:active{transform:scale(.94)}
+.tw-link{margin-top:12px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rm-a,.hf-card,.cert,.ct-seal,.sg-chip,.wk2-stamp,.vl-in,.vt-pc,.vt-zoom img{transform:none!important;clip-path:none!important}}
