@@ -15,7 +15,7 @@ function placePill(i,instant){const pill=$('#pill');if(!pill)return;const to=tab
     pill.style.transform=`translateX(${x-PILL_W/2}px) scale(${s*stretch},${s})`;pillX=x});
   pillX=to}
 function iconMove(i){const t=document.querySelector(`.tab[data-tab="${i}"]`);if(!t)return;t.classList.remove('moved');void t.offsetWidth;t.classList.add('moved')}
-function onTab(i,prev){$('#tabs').style.setProperty('--glow',GLOWS[i]);placePill(i);iconMove(i);if(i===4)renderTrainer()}
+function onTab(i,prev){$('#tabs').classList.remove('tucked');$('#tabs').style.setProperty('--glow',GLOWS[i]);placePill(i);iconMove(i);if(i===4)renderTrainer()}
 
 /* Trainer tab: his card, rank progress, and doors into everything he owns */
 function renderTrainer(){const A=albums(),xp=xpOf(A),lv=Math.floor(xp/LV)+1,nr=nextRank(lv),cards=Object.values(own).reduce((s,a)=>s+a.length,0);
@@ -44,3 +44,5 @@ document.addEventListener('click',e=>{const d=e.target.closest('[data-fn]');if(d
 addEventListener('resize',()=>placePill(cur,true));
 requestAnimationFrame(()=>placePill(cur,true));
 document.fonts?.ready.then(()=>placePill(cur,true));
+
+if(typeof closeSheet==='function'){const _cs=closeSheet;closeSheet=async function(a){const r=await _cs(a);$('#tabs').classList.remove('tucked');return r}}
