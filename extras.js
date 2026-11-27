@@ -35,7 +35,7 @@ async function openQuick(t){const no=+t.dataset.no,p=byNo(no);if(!p)return;if(ty
   const o=topCard(no),f=famOf(no),pinned=o&&hofIds().includes(o.id);
   const items=[o?['cards','🃏',`See my ${p.name} card${own[no].length>1?'s':''}`]:['cards','🔍','Look at its card'],
     o?['hof','🏆',pinned?'Take out of the Hall of Fame':'Put in my Hall of Fame']:['wish',wish[no]?'★':'☆',wish[no]?'Take off my wish list':'Add to my wish list'],
-    f?['fam','🧬','Evolution family']:null,['cry','🔊','Hear its cry'],['map','🗺️',`Find it on the ${GENS[p.gen-1][1]} map`]].filter(Boolean);
+    o?['special','✨','Mark it shiny or special']:null,f?['fam','🧬','Evolution family']:null,['cry','🔊','Hear its cry'],['map','🗺️',`Find it on the ${GENS[p.gen-1][1]} map`]].filter(Boolean);
   const ov=document.createElement('div');ov.className='qov';const c=tc(p.types[0]);
   ov.innerHTML=`<div class="qmenu" style="--c:${c[0]};--d:${c[1]}"><div class="qm-head"><img src="${ART(no)}" alt="" class="${o?'':'sil'}"><div><b>${o?esc(p.name):'???'}</b><span>${pad(no)}</span></div></div>
     ${items.map(([k,ic,l],i)=>`<button class="qm-b" data-q="${k}" style="--i:${i}"><span>${ic}</span>${esc(l)}</button>`).join('')}</div>`;
@@ -46,6 +46,7 @@ async function openQuick(t){const no=+t.dataset.no,p=byNo(no);if(!p)return;if(ty
   const close=async()=>{ov.classList.remove('on');ov.classList.add('off');t.classList.remove('held');await wait(200);ov.remove()};
   ov.addEventListener('click',async e=>{const b=e.target.closest('.qm-b');await close();if(!b)return;const k=b.dataset.q;
     if(k==='cards')openTile(t);
+    if(k==='special'){await openTile(t);if(open){await turnCard();const r=$('#back .sp-row');if(r){r.scrollIntoView({block:'center',behavior:RM?'auto':'smooth'});r.classList.add('pop')}}}
     if(k==='wish'){if(wish[no])delete wish[no];else wish[no]=1;save();refreshTile(no);renderHome();toast(wish[no]?`${p.name} is on your wish list`:`${p.name} is off your wish list`)}
     if(k==='hof')toggleHof(o,p);
     if(k==='fam'&&typeof openFamily==='function')openFamily(f.root);

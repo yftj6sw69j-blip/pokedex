@@ -1029,4 +1029,32 @@ body.sheet-open{overflow:hidden}
 @media print{@page{size:A4 landscape;margin:10mm}body>*:not(.certprint){display:none!important}.certprint{display:block!important}
   .certprint .cert{animation:none;clip-path:none;box-shadow:none;width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}.certprint .ct-seal{animation:none;clip-path:none;transform:none}}
 
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rm-a,.hf-card,.cert,.ct-seal{transform:none!important;clip-path:none!important}}
+.pc-cert{background:linear-gradient(150deg,#e0b84a,#5a3c08);grid-column:1/-1}.pc-cert::before{content:"🎓"}
+.cert.locked .ct-in>*:not(.ct-lock){filter:grayscale(1);opacity:.45}
+.ct-lock{position:absolute;z-index:3;inset:auto 0 42% 0;display:flex;flex-direction:column;align-items:center;gap:.6cqw}
+.ct-lock b{font:800 4.4cqw var(--display);background:#2b2416;color:#ffe27a;padding:1.2cqw 3cqw;border-radius:99px;transform:rotate(-6deg)}
+.ct-lock span{font:700 2.6cqw var(--display);color:#2b2416}
+.ct-next{display:grid;gap:8px}
+.ct-nx{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--panel);border:1px solid var(--line);text-align:left}
+.ct-nx-ic{font-size:24px;filter:grayscale(.6)}
+.ct-nx-tx{flex:1;min-width:0;display:grid;gap:3px}.ct-nx-tx b{font:700 14.5px var(--display)}.ct-nx-tx small{color:var(--muted);font-size:12px}
+.ct-nx-tx i{display:block;height:6px;border-radius:9px;background:#ffffff18;overflow:hidden;position:relative}
+.ct-nx-tx i::after{content:"";position:absolute;inset:0;background:var(--c);transform-origin:left;transform:scaleX(max(var(--p),.02))}
+/* ---------- Add search suggestions ---------- */
+.sg-box{position:relative;flex:1;min-width:0}
+.sg-box .search{position:relative;z-index:1;background:transparent}
+.sg-box{background:var(--panel);border-radius:16px}
+.sg-ghost{position:absolute;inset:0;z-index:0;padding:14px 16px;border:1px solid transparent;font:500 15px var(--body);color:#ffffff4d;white-space:pre;overflow:hidden;pointer-events:none}
+.sg-ghost span{color:transparent}
+.sg-chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
+.sg-chip{display:flex;align-items:center;gap:6px;padding:5px 12px 5px 5px;border-radius:999px;background:var(--panel);border:1px solid color-mix(in oklab,var(--c) 40%,var(--line));font:600 14px var(--display)}
+.sg-chip img{width:32px;height:32px;object-fit:contain;border-radius:50%;background:radial-gradient(circle,color-mix(in oklab,var(--c) 40%,transparent),transparent 70%)}
+.sg-chip em{font-style:normal;color:#4fd16b;font-size:12px}
+.sg-chip:active{transform:scale(.94)}
+.sg-chips.rise .sg-chip{animation:sgIn var(--sp-lift-ms) var(--sp-lift) both;animation-delay:calc(var(--i)*33ms)}
+@keyframes sgIn{from{clip-path:inset(0 0 100% 0);transform:translateY(8px)}to{clip-path:inset(-20% -20% -20% -20%);transform:none}}
+.sg-none{margin:0;color:var(--muted);font-size:13px}
+/* the tab bar stays put: no tucking away while scrolling */
+.tabs.tucked{transform:none!important}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rm-a,.hf-card,.cert,.ct-seal,.sg-chip{transform:none!important;clip-path:none!important}}
