@@ -93,8 +93,8 @@ const _rhX=renderHomeExtra;renderHomeExtra=function(A,xp,lv){_rhX(A,xp,lv);if($(
 /* ================= 5. Hall of Fame shelf ================= */
 const hofIds=()=>Array.isArray(prof.hof)?prof.hof:(prof.hof=[]);
 function toggleHof(o,p){const L=hofIds(),i=L.indexOf(o.id);if(i>=0){L.splice(i,1);toast(`${p.name} left the Hall of Fame`)}else{if(L.length>=9)L.shift();L.push(o.id);toast(`🏆 ${p.name} is in your Hall of Fame!`);if(typeof sfx==='function')sfx('bingo')}save2();if(typeof refreshSheet==='function'&&$('#sheet .hof'))refreshSheet()}
-function allCards(){const L=[],seen=new Set();for(const k in own)own[k].forEach(c=>{if(c.no!==undefined&&c.no!=+k)return;if(seen.has(c.id))return;seen.add(c.id);L.push({...c,no:+k})});return L}
-function hofCards(){const L=allCards(),pins=hofIds().map(id=>L.find(c=>c.id===id)).filter(Boolean);
+function hofAll(){const L=[],seen=new Set();for(const k in own)own[k].forEach(c=>{if(c.no!==undefined&&c.no!=+k)return;if(seen.has(c.id))return;seen.add(c.id);L.push({...c,no:+k})});return L}
+function hofCards(){const L=hofAll(),pins=hofIds().map(id=>L.find(c=>c.id===id)).filter(Boolean);
   const rank={u:0,r:1,c:2};const rest=L.filter(c=>!pins.includes(c)).sort((a,b)=>rank[a.tier]-rank[b.tier]||(b.date||'').localeCompare(a.date||''));
   return {pins,best:rest.filter(c=>c.tier!=='c').slice(0,9-Math.min(pins.length,6)).concat(rest.filter(c=>c.tier==='c')).slice(0,Math.max(3,9-pins.length))}}
 function hofCard(c,i,pin){const p=byNo(c.no),src=c.photo||c.imgL||c.img;
