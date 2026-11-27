@@ -57,12 +57,12 @@ function findAlbum(id){const A=albums();return [...A.gen,...A.type,...A.mini,...
 function nextTierText(a){const steps=[[.1,'Bronze'],[.5,'Silver'],[1,'Gold']];const n=steps.find(s=>a.p<s[0]);if(!n)return 'Gold trophy won!';
   const need=Math.ceil(n[0]*a.tot)-a.have;return `${need} more for ${n[1]}`}
 function openAlbum(id){const a0=findAlbum(id);if(!a0)return;openSheet(a0.name,body=>{const a=findAlbum(id),c=tc(a.key);
-  body.innerHTML=`<div class="al-head" style="--c:${c[0]};--d:${c[1]}"><div class="fx fx-${c[2]}"></div>${ring(a.p,c[0])}
+  body.innerHTML=`<div class="al-head fill ${a.id.startsWith('gen:')?'region r'+a.id.slice(4):''}" style="--c:${c[0]};--d:${c[1]};--p:${a.p}"><div class="fx fx-${c[2]}"></div>${a.isSet?`<img class="al-logo" src="https://images.pokemontcg.io/${esc(a.setId)}/logo.png" alt="${esc(a.name)}" onerror="this.remove()">`:''}${ring(a.p,c[0])}
     <div class="al-tx"><div class="mask"><span class="al-n">${a.have} <small>of ${a.tot}</small></span></div><div class="mask"><span class="tro ${tier(a.p)}">${tier(a.p)==='none'?'No trophy yet':tierLabel[tier(a.p)]+' trophy'}</span></div><div class="mask"><span class="al-next">${nextTierText(a)}</span></div></div></div>
     <div class="seg" role="tablist"><button role="tab" data-v="grid" aria-selected="${albumView==='grid'}">Grid</button><button role="tab" data-v="binder" aria-selected="${albumView==='binder'}">Binder</button><i></i></div>
     <div class="al-body"></div>`;
   const seg=body.querySelector('.seg'),ab=body.querySelector('.al-body');
-  const draw=()=>{ab.innerHTML=albumView==='grid'?albumGrid(a):albumBinder(a);seg.style.setProperty('--x',albumView==='grid'?'0%':'100%');
+  const draw=()=>{ab.innerHTML=albumView==='grid'?albumGrid(a):(typeof coverPicker==='function'?coverPicker():'')+albumBinder(a);if(albumView==='binder'&&typeof applyCover==='function')applyCover(ab);seg.style.setProperty('--x',albumView==='grid'?'0%':'100%');
     seg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===albumView));if(albumView==='binder')binderDots(ab)};
   seg.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||b.dataset.v===albumView)return;albumView=b.dataset.v;
     ab.style.transition='clip-path 180ms var(--exit)';ab.style.clipPath='inset(0 0 100% 0)';await wait(180);draw();ab.style.transition='none';ab.style.clipPath='inset(0 0 100% 0)';void ab.offsetWidth;
@@ -71,13 +71,13 @@ function openAlbum(id){const a0=findAlbum(id);if(!a0)return;openSheet(a0.name,bo
 function setSlots(a){const cards={};for(const n in own)own[n].forEach(c=>{if(c.setId===a.setId&&!cards[c.number])cards[c.number]={c,no:+n}});
   const slots=[];for(let i=1;i<=a.tot;i++)slots.push({num:String(i),hit:cards[String(i)]});
   Object.keys(cards).filter(k=>!/^\d+$/.test(k)||+k>a.tot).forEach(k=>slots.push({num:k,hit:cards[k]}));return slots}
-function albumGrid(a){if(a.isSet){return `<div class="grid">${setSlots(a).map(s=>s.hit?`<button class="tile set-own opencard" data-no="${s.hit.no}"><img class="cardfill" src="${esc(s.hit.c.img)}" alt="${esc(s.hit.c.name)}" loading="lazy"></button>`:`<div class="tile pocket"><span class="pk-n">${esc(s.num)}</span></div>`).join('')}</div>`}
+function albumGrid(a){if(a.isSet){return `<div class="grid">${setSlots(a).map(s=>s.hit?`<button class="tile set-own opencard ${s.hit.c.tier==='u'?'foil':''}" data-no="${s.hit.no}"><img class="cardfill" src="${esc(s.hit.c.img)}" alt="${esc(s.hit.c.name)}" loading="lazy"></button>`:`<div class="tile pocket"><span class="pk-n">${esc(s.num)}</span></div>`).join('')}</div>`}
   return `<div class="grid">${a.all.map(tileHTML).join('')}</div>`}
-function albumBinder(a){const items=a.isSet?setSlots(a).map(s=>s.hit?{own:true,no:s.hit.no,img:s.hit.c.img,label:s.hit.c.name}:{own:false,label:'#'+s.num}):
-  a.all.map(p=>{const o=topCard(p.no);return o?{own:true,no:p.no,img:o.photo||o.img,art:!o.photo&&!o.img,label:p.name}:{own:false,no:p.no,label:pad(p.no)}});
+function albumBinder(a){const items=a.isSet?setSlots(a).map(s=>s.hit?{own:true,no:s.hit.no,img:s.hit.c.img,label:s.hit.c.name,u:s.hit.c.tier==='u'}:{own:false,label:'#'+s.num}):
+  a.all.map(p=>{const o=topCard(p.no);return o?{own:true,no:p.no,img:o.photo||o.img,art:!o.photo&&!o.img,label:p.name,u:o.tier==='u'}:{own:false,no:p.no,label:pad(p.no)}});
   const pages=[];for(let i=0;i<items.length;i+=9)pages.push(items.slice(i,i+9));
   return `<div class="binder">${pages.map((pg,pi)=>`<div class="bpage" aria-label="Page ${pi+1} of ${pages.length}">${pg.map(it=>it.own?
-     `<button class="pocket full opencard" data-no="${it.no}">${it.img?`<img src="${esc(it.img)}" alt="${esc(it.label)}" loading="lazy">`:`<img class="partart" src="${ART(it.no)}" alt="${esc(it.label)}" loading="lazy">`}</button>`:
+     `<button class="pocket full opencard ${it.u?'foil':''}" data-no="${it.no}">${it.img?`<img src="${esc(it.img)}" alt="${esc(it.label)}" loading="lazy">`:`<img class="partart" src="${ART(it.no)}" alt="${esc(it.label)}" loading="lazy">`}</button>`:
      `<div class="pocket">${it.no?`<img class="ghostart" src="${ART(it.no)}" alt="" loading="lazy">`:''}<span class="pk-n">${esc(it.label)}</span></div>`).join('')}${'<div class="pocket blank"></div>'.repeat(9-pg.length)}</div>`).join('')}</div>
    <div class="bdots">${pages.length>1?`Page <b class="bcur">1</b> of ${pages.length} · swipe for more`:''}</div>`}
 function binderDots(root){const b=root.querySelector('.binder'),cur=root.querySelector('.bcur');if(!b||!cur)return;b.addEventListener('scroll',()=>{cur.textContent=Math.round(b.scrollLeft/b.clientWidth)+1},{passive:true})}
@@ -108,7 +108,7 @@ function openTrophies(){openSheet('Trophy room',body=>{const A=albums(),all=[...
   body.innerHTML=['gold','silver','bronze'].map(t=>`<div class="sec">${tierLabel[t]} (${g(t).length})</div><div class="near">${g(t).map(albumRow).join('')||'<p class="hint">None yet. Keep collecting!</p>'}</div>`).join('')+
    `<div class="sec">Still locked</div><p class="hint">Get 10% of any album for Bronze, half for Silver and all of it for Gold.</p><div class="near">${g('none').slice(0,8).map(albumRow).join('')}</div>`})}
 function allCards(){const L=[];for(const n in own)own[n].forEach((c,i)=>L.push({...c,no:+n,i}));return L.sort((a,b)=>(b.date||'').localeCompare(a.date||''))}
-function cardThumbs(L){return `<div class="cgrid">${L.map(c=>`<button class="cthumb opencard" data-no="${c.no}">${c.photo||c.img?`<img src="${c.photo||esc(c.img)}" alt="${esc(c.name)}" loading="lazy">`:`<img class="partart" src="${ART(c.no)}" alt="${esc(c.name)}">`}<span>${esc(c.name)}</span></button>`).join('')}</div>`}
+function cardThumbs(L){return `<div class="cgrid">${L.map(c=>`<button class="cthumb opencard ${c.tier==='u'?'foil':''}" data-no="${c.no}">${c.photo||c.img?`<img src="${c.photo||esc(c.img)}" alt="${esc(c.name)}" loading="lazy">`:`<img class="partart" src="${ART(c.no)}" alt="${esc(c.name)}">`}<span>${esc(c.name)}</span></button>`).join('')}</div>`}
 function openMyCards(){openSheet('All my cards',body=>{const L=allCards();body.innerHTML=L.length?`<p class="sub">${L.length} cards, newest first. Tap one to see it.</p>${cardThumbs(L)}`:'<p class="hint">No cards yet. Tap Add to put in your first one.</p>'})}
 function spares(){const L=[];for(const n in own)if(own[n].length>1){const keep=Math.min(fav[n]||0,own[n].length-1);own[n].forEach((c,i)=>{if(i!==keep)L.push({...c,no:+n,i})})}return L}
 function openSpares(){openSheet('Got spare',body=>{const L=spares();body.innerHTML=`<p class="sub">Cards you have more than one of. These are great for trading with friends.</p>${L.length?cardThumbs(L):'<p class="hint">No spares yet. When you get a second card of a Pokémon, it shows up here.</p>'}`})}

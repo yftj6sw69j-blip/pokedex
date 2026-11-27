@@ -38,11 +38,11 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 
 /* ---------- reference data ---------- */
 const T={fire:['#ff7a3d','#5a1d0a','embers','Fire'],water:['#3fa8ff','#0b2a52','ripples','Water'],grass:['#4fd16b','#0f3b1b','leaves','Grass'],
- electric:['#ffd23f','#4a3a05','sparks','Electric'],psychic:['#ff5fa8','#4a0f30','mist','Psychic'],ghost:['#9b7bff','#1f1446','mist','Ghost'],
- fighting:['#e0603a','#44160a','rock','Fighting'],rock:['#c8a56a','#3a2c12','rock','Rock'],normal:['#c9c3b5','#2e2c27','dust','Normal'],
- fairy:['#ffa8e0','#45203a','stars','Fairy'],dragon:['#7b8cff','#141d4d','stars','Dragon'],poison:['#c063ff','#300f45','mist','Poison'],
- flying:['#9fc3ff','#1b2a48','dust','Flying'],ground:['#d9a95b','#3d2a0e','rock','Ground'],bug:['#a8c93a','#2c370b','leaves','Bug'],
- steel:['#b7c4d6','#263040','rock','Steel'],dark:['#8a76a0','#17121e','mist','Dark'],ice:['#8fe6ff','#123a4a','stars','Ice']};
+ electric:['#ffd23f','#4a3a05','sparks','Electric'],psychic:['#ff5fa8','#4a0f30','rings','Psychic'],ghost:['#9b7bff','#1f1446','fog','Ghost'],
+ fighting:['#e0603a','#44160a','impact','Fighting'],rock:['#c8a56a','#3a2c12','rock','Rock'],normal:['#c9c3b5','#2e2c27','dust','Normal'],
+ fairy:['#ffa8e0','#45203a','stars','Fairy'],dragon:['#7b8cff','#141d4d','scales','Dragon'],poison:['#c063ff','#300f45','bubbles','Poison'],
+ flying:['#9fc3ff','#1b2a48','wind','Flying'],ground:['#d9a95b','#3d2a0e','dust','Ground'],bug:['#a8c93a','#2c370b','leaves','Bug'],
+ steel:['#b7c4d6','#263040','sheen','Steel'],dark:['#8a76a0','#17121e','shadow','Dark'],ice:['#8fe6ff','#123a4a','frost','Ice']};
 const GENS=[[1,'Kanto'],[2,'Johto'],[3,'Hoenn'],[4,'Sinnoh'],[5,'Unova'],[6,'Kalos'],[7,'Alola'],[8,'Galar'],[9,'Paldea']];
 const ART=no=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${no}.png`;
 const TCG='https://api.pokemontcg.io/v2/cards';
@@ -60,7 +60,7 @@ let own={},fav={},wish={};
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');own=s.own||{};fav=s.fav||{};wish=s.wish||{}}catch(e){}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify({own,fav,wish}))}catch(e){toast(e&&e.name==='QuotaExceededError'?'Storage is full. Save a backup, then use fewer photos.':'Could not save on this device')}}
 const has=n=>!!(own[n]&&own[n].length);
-const tc=t=>T[t]||T.normal;
+const XT={};const tc=t=>T[t]||XT[t]||T.normal;
 const pad=n=>'#'+String(n).padStart(4,'0');
 // rarity → tier: c common, r rare, u ultra (special art, secret, hyper…)
 function tierOf(r){r=r||'';if(/secret|ultra|illustration|hyper|rainbow|shiny|amazing|special|radiant|gold|crown/i.test(r))return 'u';if(/rare|holo|ace spec|double/i.test(r))return 'r';return 'c'}
@@ -84,12 +84,12 @@ function albums(){const score=(name,key,all)=>{const h=all.filter(p=>has(p.no)).
     score('Heavier than a car (over 1,000 kg)','steel',DEX.filter(p=>p.wt>=1000)),score('Tiny ones (under 30 cm)','bug',DEX.filter(p=>p.ht<0.3))].map((a,i)=>({...a,id:'mini:'+i}));
   // card sets he has started: progress = distinct card numbers owned ÷ printed total
   const sets={};for(const n in own)own[n].forEach(c=>{if(!c.setId)return;const s=sets[c.setId]||(sets[c.setId]={name:c.set,total:c.total||0,nums:new Set()});s.nums.add(c.number)});
-  const set=Object.entries(sets).filter(([,s])=>s.total).map(([sid,s])=>({id:'set:'+sid,setId:sid,name:s.name,key:'water',all:[],have:Math.min(s.nums.size,s.total),tot:s.total,p:Math.min(1,s.nums.size/s.total),isSet:true})).sort((a,b)=>b.p-a.p);
+  const set=Object.entries(sets).filter(([,s])=>s.total).map(([sid,s])=>({id:'set:'+sid,setId:sid,name:s.name,key:(typeof setKey==='function'?setKey(sid):'water'),all:[],have:Math.min(s.nums.size,s.total),tot:s.total,p:Math.min(1,s.nums.size/s.total),isSet:true})).sort((a,b)=>b.p-a.p);
   return {gen,type,mini,set}}
 const tier=p=>p>=1?'gold':p>=.5?'silver':p>=.1?'bronze':'none';
 const tierLabel={gold:'Gold',silver:'Silver',bronze:'Bronze',none:'Locked'};
 function albumRow(a){const c=tc(a.key);const miss=a.isSet?[]:a.all.filter(p=>!has(p.no)).map(p=>p.name);
-  return `<button class="album" data-album="${a.id}"><div class="ic" style="--c:${c[0]};--d:${c[1]};background:radial-gradient(circle at 50% 40%,${c[0]},${c[1]} 80%)"><div class="fx fx-${c[2]}"></div></div>
+  return `<button class="album" data-album="${a.id}" style="--p:${a.p}"><div class="ic fill ${a.id.startsWith('gen:')?'region r'+a.id.slice(4):''}" style="--c:${c[0]};--d:${c[1]};background:radial-gradient(circle at 50% 40%,${c[0]},${c[1]} 80%)"><div class="fx fx-${c[2]}"></div>${a.isSet?`<img class="setlogo" src="https://images.pokemontcg.io/${esc(a.setId)}/symbol.png" alt="" loading="lazy" onerror="this.remove()">`:''}</div>
   <div class="tx"><div class="t1">${esc(a.name)}</div><div class="t2">${a.have} of ${a.tot}${miss.length&&miss.length<=2?' · needs '+miss.map(esc).join(' and '):''}</div>
   <div class="bar" style="--c:${c[0]}"><i style="--p:${Math.max(a.p,.015)}"></i></div></div><span class="tro ${tier(a.p)}">${tierLabel[tier(a.p)]}</span></button>`}
 // trainer title: best type album with at least 3
@@ -121,7 +121,7 @@ function renderGens(){$('#gens').innerHTML=[...GENS.map(([g,r])=>[g,`Gen ${g} ${
 function renderFilters(){$('#filters').innerHTML=FILTERS.map(([k,l])=>`<button class="chip" data-f="${k}" aria-pressed="${filt===k}" ${T[k]?`style="--c:${T[k][0]}"`:''}>${T[k]?'<span class="dot"></span>':''}${l}</button>`).join('')}
 function topCard(n){const a=own[n];if(!a||!a.length)return null;return a[Math.min(fav[n]||0,a.length-1)]}
 function tileHTML(p){const c=tc(p.types[0]),d=tc(p.types[1]||p.types[0]),o=topCard(p.no),cnt=own[p.no]?.length||0,rare=o&&o.tier!=='c';
-  return `<button class="tile ${o?'':'missing'} ${rare?'holo':''}" data-no="${p.no}" style="--c:${c[0]};--d:${c[1]}" aria-label="${o?esc(p.name):'Not caught yet, number '+p.no}">
+  return `<button class="tile ${o?'':'missing'} ${rare?'holo':''} ${o&&o.tier==='u'?'foil':''}" data-no="${p.no}" style="--c:${c[0]};--d:${c[1]}" aria-label="${o?esc(p.name):'Not caught yet, number '+p.no}">
    ${o?`<div class="fx fx-${c[2]}"></div>`:''}${o&&p.types[1]?`<div class="fx" style="clip-path:polygon(100% 0,100% 100%,0 100%);background:radial-gradient(circle at 50% 38%, ${d[0]}aa, ${d[1]}cc 72%)"></div>`:''}
    <span class="no">${pad(p.no)}</span><img class="art" src="${ART(p.no)}" alt="" loading="lazy" decoding="async">
    ${cnt>1?`<span class="count-tag">×${cnt}</span>`:rare?`<span class="rare-tag">${o.tier==='u'?'ULTRA':'RARE'}</span>`:''}${wish[p.no]&&!o?'<span class="wish-tag">★</span>':''}<span class="nm">${o?esc(p.name):'???'}</span></button>`}
@@ -183,9 +183,9 @@ $('#results').addEventListener('click',e=>{const b=e.target.closest('.pick');if(
 function toEntry(c){return {id:c.id,name:c.name,no:c.nationalPokedexNumbers[0],also:c.nationalPokedexNumbers.slice(1),number:c.number,set:c.set.name,setId:c.set.id,total:c.set.printedTotal,rarity:c.rarity||'',tier:tierOf(c.rarity),img:c.images.small,imgL:c.images.large||c.images.small,date:new Date().toISOString()}}
 
 /* ---------- tabs: mask wipe + slide; old exits on Exit, new enters on LIFT 2 frames later ---------- */
-const VIEWS=['#v-home','#v-dex','#v-add','#v-albums'];let cur=0,busy=false;
-const GLOWS=['#ff4656','#3fa8ff','#ff4656','#ffd23f'];
-async function go(i){if(i===cur||busy)return;busy=true;const dir=i>cur?1:-1,o=$(VIEWS[cur]),n=$(VIEWS[i]);
+const VIEWS=['#v-home','#v-dex','#v-add','#v-albums','#v-trainer'];let cur=0,busy=false;
+const GLOWS=['#ff4656','#3fa8ff','#ff4656','#ffd23f','#b07cff'];
+async function go(i){if(i===cur||busy)return;busy=true;const dir=i>cur?1:-1,o=$(VIEWS[cur]),n=$(VIEWS[i]);if(typeof onTab==='function')onTab(i,cur);
   document.querySelectorAll('.tab').forEach(t=>{if(+t.dataset.tab===i)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});
   $('#app').style.setProperty('--glow',GLOWS[i]);
   if(RM){o.hidden=true;n.hidden=false;cur=i;busy=false;scrollTo(0,0);return}
