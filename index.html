@@ -13,31 +13,38 @@
 <link rel="apple-touch-icon" href="icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Inter:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <div class="app" id="app">
   <header class="top">
     <div class="brand"><span class="lens" aria-hidden="true"></span><h1>Pokédex</h1></div>
-    <span class="lvl" id="lvlChip">Level <b>1</b></span>
+    <button class="lvl" id="lvlChip" aria-label="Levels and ranks">Level <b>1</b></button>
   </header>
 
   <main class="views" id="views">
     <section class="view" id="v-home" aria-label="Home">
       <div class="trainer">
-        <div class="trow">
+        <button class="trow" aria-label="My trainer card">
           <div class="avatar" aria-hidden="true">T</div>
-          <div><div class="tname" contenteditable="true" spellcheck="false" id="tname">Trainer</div><div class="tmeta" id="ttitle">Tap your name to change it</div></div>
-        </div>
-        <div class="xp"><i id="xpbar"></i></div>
-        <div class="xpl"><span id="xpl1">0 XP</span><span id="xpl2">to level 2</span></div>
+          <div class="tw"><div class="tname" id="tname">Trainer</div><div class="tmeta" id="ttitle">Rookie</div></div>
+          <span class="chev" aria-hidden="true">›</span>
+        </button>
+        <button class="xp-tap" aria-label="Levels and ranks"><div class="xp"><i id="xpbar"></i></div>
+        <div class="xpl"><span id="xpl1">0 XP</span><span id="xpl2">to level 2</span></div></button>
         <div class="stats">
-          <div class="stat"><b id="sCaught">0</b><span>Pokémon</span></div>
-          <div class="stat"><b id="sCards">0</b><span>Cards</span></div>
-          <div class="stat"><b id="sTro">0</b><span>Trophies</span></div>
+          <button class="stat" id="stCaught"><b id="sCaught">0</b><span>Pokémon</span></button>
+          <button class="stat" id="stCards"><b id="sCards">0</b><span>Cards</span></button>
+          <button class="stat" id="stTro"><b id="sTro">0</b><span>Trophies</span></button>
         </div>
       </div>
       <button class="cta" data-go="2"><span class="ball" style="width:26px;height:26px" aria-hidden="true"></span>Add a card</button>
+      <button class="nag" id="backupNag" hidden><b>Time for a backup!</b> Ask a grown-up to save one so your cards stay safe.</button>
+      <div class="trade">
+        <button class="tc-btn" id="openSpares"><b id="spareN">0</b><span>Got spare</span></button>
+        <button class="tc-btn" id="openWish"><b id="wishN">0</b><span>Wish list</span></button>
+        <button class="tc-btn" id="openPacks"><b id="packN">0</b><span>My packs</span></button>
+      </div>
       <div id="homeBody">
         <div class="sec">Nearly there</div>
         <div class="near" id="near"></div>
@@ -71,6 +78,9 @@
     <section class="view" id="v-add" aria-label="Add a card" hidden>
       <h2 class="h2"><span class="mask"><span>Add a card</span></span></h2>
       <p class="sub"><span class="mask"><span style="--i:1">Find your exact card, then tap it.</span></span></p>
+      <div id="packBar"></div>
+      <button class="scanbtn" id="scanBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.5"/></svg>Scan with camera</button>
+      <div class="or"><span>or type it</span></div>
       <div class="howto" aria-hidden="true">
         <div class="mini-card"><span class="corner">025/198</span></div>
         <p>Look at the <b>bottom corner</b> of the card for a number like <b>025/198</b>, and type it in. Or type the Pokémon's name.</p>
@@ -94,12 +104,8 @@
       <div class="near" id="typeAlb"></div>
       <div class="sec">Mini collections</div>
       <div class="near" id="miniAlb"></div>
-      <div class="sec">Keep it safe</div>
-      <div class="backup">
-        <button class="ghost" id="exportBtn">Save a backup file</button>
-        <label class="ghost">Load a backup file<input type="file" accept="application/json,.json" id="importInp"></label>
-      </div>
-      <p class="foot">Your collection is saved on this device only. Save a backup now and then, so nothing is lost if the browser is cleared.<br>Pokémon pictures from PokéAPI. Card pictures and data from the Pokémon TCG API. Pokémon and all related names are trademarks of Nintendo, Creatures and GAME FREAK. This is a private family project.</p>
+      <div class="sec">For grown-ups</div>
+      <button class="album" id="openGrown"><div class="ic gic" aria-hidden="true"></div><div class="tx"><div class="t1">Grown-ups corner</div><div class="t2">Backups, fix a mistake, start again</div></div><span class="chev" aria-hidden="true">›</span></button>
     </section>
   </main>
 </div>
@@ -121,6 +127,7 @@
   <div class="close-hint" id="closeHint" hidden></div>
 </div>
 <div class="toast" id="toast" hidden></div>
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"></script>
+<script src="features.js?v=3"></script>
 </body>
 </html>

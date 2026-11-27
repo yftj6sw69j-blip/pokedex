@@ -46,7 +46,7 @@ const T={fire:['#ff7a3d','#5a1d0a','embers','Fire'],water:['#3fa8ff','#0b2a52','
 const GENS=[[1,'Kanto'],[2,'Johto'],[3,'Hoenn'],[4,'Sinnoh'],[5,'Unova'],[6,'Kalos'],[7,'Alola'],[8,'Galar'],[9,'Paldea']];
 const ART=no=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${no}.png`;
 const TCG='https://api.pokemontcg.io/v2/cards';
-let DEX=[],kids={};
+let DEX=[],kids={},FLAV=[];
 const byNo=i=>DEX[i-1];
 function evoLine(p){let r=p;while(r.from)r=byNo(r.from);const line=[r.name];let c=r.no;
   while(kids[c]){const k=kids[c];if(k.length>2){line.push(`${k.length} different evolutions`);break}line.push(k.map(n=>byNo(n).name).join(' or '));c=k[0]}
@@ -68,7 +68,8 @@ const tierName={c:'Common',r:'Rare',u:'Ultra rare'};
 
 /* ---------- XP: new Pokémon 100 · duplicate 20 · rare +150 · ultra +400 · photo +25 · album done +500 ---------- */
 function xpOf(A){let x=0;for(const n in own){own[n].forEach((c,i)=>{x+=(i===0?100:20)+(c.tier==='r'?150:c.tier==='u'?400:0)+(c.photo?25:0)})}
-  if(A)x+=[...A.gen,...A.type,...A.mini,...A.set].filter(a=>a.p>=1).length*500;return x}
+  if(A)x+=[...A.gen,...A.type,...A.mini,...A.set].filter(a=>a.p>=1).length*500;
+  if(typeof packXP==='function')x+=packXP();return x}
 const LV=500; // XP per level
 
 /* ---------- albums ---------- */
@@ -76,21 +77,21 @@ const STARTERS=[1,4,7,152,155,158,252,255,258,387,390,393,495,498,501,650,653,65
 const EEVEE=[133,134,135,136,196,197,470,471,700];
 const GENKEY=['grass','water','fire','psychic','electric','fairy','dark','steel','ghost'];
 function albums(){const score=(name,key,all)=>{const h=all.filter(p=>has(p.no)).length;return {name,key,all,have:h,tot:all.length,p:all.length?h/all.length:0}};
-  const gen=GENS.map(([g,r],i)=>score(`Gen ${g} · ${r}`,GENKEY[i],DEX.filter(p=>p.gen===g)));
-  const type=Object.keys(T).map(k=>score(`${T[k][3]} album`,k,DEX.filter(p=>p.types.includes(k))));
+  const gen=GENS.map(([g,r],i)=>({...score(`Gen ${g} · ${r}`,GENKEY[i],DEX.filter(p=>p.gen===g)),id:'gen:'+g}));
+  const type=Object.keys(T).map(k=>({...score(`${T[k][3]} album`,k,DEX.filter(p=>p.types.includes(k))),id:'type:'+k}));
   const mini=[score('Every starter Pokémon','fire',STARTERS.map(byNo)),score('All the Eeveelutions','normal',EEVEE.map(byNo)),
     score('Legendary Pokémon','dragon',DEX.filter(p=>p.leg)),score('Mythical Pokémon','psychic',DEX.filter(p=>p.myth)),
-    score('Heavier than a car (over 1,000 kg)','steel',DEX.filter(p=>p.wt>=1000)),score('Tiny ones (under 30 cm)','bug',DEX.filter(p=>p.ht<0.3))];
+    score('Heavier than a car (over 1,000 kg)','steel',DEX.filter(p=>p.wt>=1000)),score('Tiny ones (under 30 cm)','bug',DEX.filter(p=>p.ht<0.3))].map((a,i)=>({...a,id:'mini:'+i}));
   // card sets he has started: progress = distinct card numbers owned ÷ printed total
   const sets={};for(const n in own)own[n].forEach(c=>{if(!c.setId)return;const s=sets[c.setId]||(sets[c.setId]={name:c.set,total:c.total||0,nums:new Set()});s.nums.add(c.number)});
-  const set=Object.values(sets).filter(s=>s.total).map(s=>({name:s.name,key:'water',all:[],have:Math.min(s.nums.size,s.total),tot:s.total,p:Math.min(1,s.nums.size/s.total),isSet:true})).sort((a,b)=>b.p-a.p);
+  const set=Object.entries(sets).filter(([,s])=>s.total).map(([sid,s])=>({id:'set:'+sid,setId:sid,name:s.name,key:'water',all:[],have:Math.min(s.nums.size,s.total),tot:s.total,p:Math.min(1,s.nums.size/s.total),isSet:true})).sort((a,b)=>b.p-a.p);
   return {gen,type,mini,set}}
 const tier=p=>p>=1?'gold':p>=.5?'silver':p>=.1?'bronze':'none';
 const tierLabel={gold:'Gold',silver:'Silver',bronze:'Bronze',none:'Locked'};
 function albumRow(a){const c=tc(a.key);const miss=a.isSet?[]:a.all.filter(p=>!has(p.no)).map(p=>p.name);
-  return `<div class="album"><div class="ic" style="--c:${c[0]};--d:${c[1]};background:radial-gradient(circle at 50% 40%,${c[0]},${c[1]} 80%)"><div class="fx fx-${c[2]}"></div></div>
+  return `<button class="album" data-album="${a.id}"><div class="ic" style="--c:${c[0]};--d:${c[1]};background:radial-gradient(circle at 50% 40%,${c[0]},${c[1]} 80%)"><div class="fx fx-${c[2]}"></div></div>
   <div class="tx"><div class="t1">${esc(a.name)}</div><div class="t2">${a.have} of ${a.tot}${miss.length&&miss.length<=2?' · needs '+miss.map(esc).join(' and '):''}</div>
-  <div class="bar" style="--c:${c[0]}"><i style="--p:${Math.max(a.p,.015)}"></i></div></div><span class="tro ${tier(a.p)}">${tierLabel[tier(a.p)]}</span></div>`}
+  <div class="bar" style="--c:${c[0]}"><i style="--p:${Math.max(a.p,.015)}"></i></div></div><span class="tro ${tier(a.p)}">${tierLabel[tier(a.p)]}</span></button>`}
 // trainer title: best type album with at least 3
 function titleOf(A){const best=[...A.type].sort((a,b)=>b.have-a.have)[0];if(!best||best.have<3)return 'Pokémon Trainer';
   const n={fire:'Fire Specialist',water:'Water Champion',grass:'Grass Ranger',electric:'Thunder Tamer',psychic:'Mind Master',ghost:'Ghost Whisperer',fighting:'Black Belt',rock:'Rock Hound',
@@ -109,9 +110,10 @@ function renderHome(){const A=albums(),xp=xpOf(A),lv=Math.floor(xp/LV)+1,into=xp
   $('#homeEmpty').hidden=n>0;$('#homeBody').hidden=n===0;
   $('#near').innerHTML=all.filter(a=>a.p<1&&a.have>0).sort((a,b)=>(a.tot-a.have)-(b.tot-b.have)||b.p-a.p).slice(0,3).map(albumRow).join('');
   const recent=[];for(const k in own)own[k].forEach(c=>recent.push([c.date||'',+k]));recent.sort((a,b)=>b[0].localeCompare(a[0]));
-  $('#latest').innerHTML=[...new Set(recent.map(r=>r[1]))].slice(0,8).map(n=>{const p=byNo(n),c=tc(p.types[0]);return `<span class="mini" style="--c:${c[0]};--d:${c[1]}"><img src="${ART(n)}" alt="" loading="lazy">${esc(p.name)}</span>`}).join('');
+  $('#latest').innerHTML=[...new Set(recent.map(r=>r[1]))].slice(0,8).map(n=>{const p=byNo(n),c=tc(p.types[0]);return `<button class="mini opencard" data-no="${n}" style="--c:${c[0]};--d:${c[1]}"><img src="${ART(n)}" alt="" loading="lazy">${esc(p.name)}</button>`}).join('');
   $('#setAlb').innerHTML=A.set.length?A.set.map(albumRow).join(''):'<p class="hint">Sets appear here as soon as you add your first card.</p>';
-  $('#genAlb').innerHTML=A.gen.map(albumRow).join('');$('#typeAlb').innerHTML=A.type.sort((a,b)=>b.p-a.p).map(albumRow).join('');$('#miniAlb').innerHTML=A.mini.map(albumRow).join('')}
+  $('#genAlb').innerHTML=A.gen.map(albumRow).join('');$('#typeAlb').innerHTML=A.type.sort((a,b)=>b.p-a.p).map(albumRow).join('');$('#miniAlb').innerHTML=A.mini.map(albumRow).join('');
+  if(typeof renderHomeExtra==='function')renderHomeExtra(A,xp,lv)}
 
 let gen=1,filt='all',sortBy='no';
 const FILTERS=[['all','All'],['caught','Caught'],['missing','Missing'],['wish','Wish list'],...Object.keys(T).map(k=>[k,T[k][3]])];
@@ -214,6 +216,7 @@ function backHTML(p){const list=own[p.no]||[],tp=p.types.map(t=>`<span class="tp
    <button class="ghost act" data-act="wish" data-no="${p.no}">${wish[p.no]?'★ On your wish list':'☆ Add to my wish list'}</button><button class="photo-btn act" data-act="findit" data-no="${p.no}">Find ${esc(p.name)} cards</button>`;
   const f=Math.min(fav[p.no]||0,list.length-1),o=list[f];
   return `<div class="hp"><div class="typerow">${tp}</div><div style="text-align:right"><span>HP</span> <b>${p.hp}</b></div></div><p class="bname">${esc(p.name)} <span>${pad(p.no)}</span></p>
+  <p class="flav">${esc(FLAV[p.no-1]||'')}</p><button class="ghost act say" data-act="say" data-no="${p.no}">🔊 Read it to me</button>
   <div class="atk"><span class="an">Attack power</span><span class="ad">${p.atk}</span></div>
   <div class="kv"><div><span>Height</span><b>${p.ht} m</b></div><div><span>Weight</span><b>${p.wt} kg</b></div></div>
   <div class="evo">${esc(evoLine(p))}${p.leg?' · Legendary':''}${p.myth?' · Mythical':''}</div>
@@ -236,18 +239,19 @@ async function openTile(el){if(open||busy)return;busy=true;const p=byNo(+el.data
 async function turnCard(){if(!open||busy)return;busy=true;const C=cardRect(),from=open.side,to=from?0:180;
   await play(560,t=>{setHero(C.x,C.y,C.w,C.h,14,1,0,lerp(from,to,springX(t/1000,SP.settle.T,0)))});open.side=to;busy=false}
 async function closeTile(){if(!open||busy)return;busy=true;$('#closeHint').hidden=true;const {a,w,h,side,p}=open,C=cardRect();
-  const el=$(`.tile[data-no="${p.no}"]`)||open.el;stage.classList.remove('on');
+  const el=open.el.isConnected?open.el:($(`.tile[data-no="${p.no}"]`)||open.el);stage.classList.remove('on');
   await play(620,t=>{const u=t/620,e=HAND(u),fl=1-HAND(clamp01(u/0.7));const pt=arcPoint(C,a,e,-.18);setHero(pt.x,pt.y,lerp(C.w,w,e),lerp(C.h,h,e),lerp(14,16,e),1,0,side*fl)});
   el.style.visibility='';hero.hidden=true;open=null;busy=false}
-$('#grid').addEventListener('click',e=>{const t=e.target.closest('.tile');if(t)openTile(t)});
+document.addEventListener('click',e=>{if(e.target.closest('#stage'))return;const t=e.target.closest('.tile,.opencard');if(t&&t.dataset.no)openTile(t)});
 stage.addEventListener('click',e=>{if(!open||e.target===done)return;const act=e.target.closest('.act');
   if(act){const no=+act.dataset.no;
     if(act.dataset.act==='wish'){if(wish[no])delete wish[no];else wish[no]=1;save();act.textContent=wish[no]?'★ On your wish list':'☆ Add to my wish list';refreshTile(no);return}
     if(act.dataset.act==='fav'){fav[no]=+act.dataset.i;save();paint(byNo(no));refreshTile(no);turnCard();return}
+    if(act.dataset.act==='say'){sayDex(byNo(no));return}
     if(act.dataset.act==='findit'){closeTile().then(()=>{go(2).then(()=>{$('#search').value=byNo(no).name;find(byNo(no).name)})});return}}
   if(e.target.closest('.act-photo,input'))return;if(e.target.closest('#hero'))turnCard();else closeTile()});
 hero.addEventListener('pointermove',e=>{const r=hero.getBoundingClientRect();hero.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');hero.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%')});
-function refreshTile(no){const el=$(`.tile[data-no="${no}"]`);if(!el)return;const tmp=document.createElement('div');tmp.innerHTML=tileHTML(byNo(no)).trim();const nu=tmp.firstChild;nu.style.visibility=el.style.visibility;el.replaceWith(nu);if(open&&open.p.no===no)open.el=nu}
+function refreshTile(no){document.querySelectorAll(`.tile[data-no="${no}"]`).forEach(el=>{const tmp=document.createElement('div');tmp.innerHTML=tileHTML(byNo(no)).trim();const nu=tmp.firstChild;nu.style.visibility=el.style.visibility;el.replaceWith(nu);if(open&&open.el===el)open.el=nu})}
 $('#filters').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;filt=b.dataset.f;document.querySelectorAll('#filters .chip').forEach(c=>c.setAttribute('aria-pressed',c===b));regrid()});
 $('#gens').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;gen=+b.dataset.g;document.querySelectorAll('#gens .chip').forEach(c=>c.setAttribute('aria-pressed',c===b));regrid(true)});
 $('#sort').addEventListener('change',e=>{sortBy=e.target.value;regrid()});
@@ -302,7 +306,7 @@ async function catchCard(src,card){if(busy||catching)return;const p=byNo(card.no
   done.style.top=(C.y+C.h/2+18+wordsH)+'px';done.hidden=false;done.animate?.([{transform:'translateX(-50%) scale(0)'},{transform:'translateX(-50%) scale(1)'}],{duration:SP.snap.T*1250,easing:getComputedStyle(document.documentElement).getPropertyValue('--sp-snap').trim()||'ease-out'});
   catching={p,C,orb,card};busy=false}
 done.addEventListener('click',async e=>{e.stopPropagation();if(!catching||busy)return;busy=true;const {p,C,orb,card}=catching;done.hidden=true;words.hidden=true;
-  const levelBefore=Math.floor(xpOf(albums())/LV)+1;
+  const levelBefore=Math.floor(xpOf(albums())/LV)+1;if(typeof snapTiers==='function')snapTiers();
   const tr=$('#tabDex').getBoundingClientRect(),b={x:tr.left+tr.width/2,y:tr.top+14};
   stage.style.setProperty('--ox',b.x+'px');stage.style.setProperty('--oy',b.y+'px');stage.classList.remove('on');
   // travel to the Pokédex tab: anticipation, arc, shrink to a point (Hand-off)
@@ -314,22 +318,17 @@ done.addEventListener('click',async e=>{e.stopPropagation();if(!catching||busy)r
   renderHome();renderGrid();$('#results').querySelectorAll('.pick').forEach(el=>{const c=found[+el.dataset.i];if(c&&c.nationalPokedexNumbers.includes(p.no)&&!el.querySelector('.have'))el.insertAdjacentHTML('beforeend','<span class="have">In your Pokédex</span>')});
   catching=null;busy=false;
   const levelAfter=Math.floor(xpOf(albums())/LV)+1;
+  if(typeof afterCatch==='function'&&await afterCatch(p,card,levelBefore,levelAfter))return;
   await go(1);await wait(240);const el=$(`.tile[data-no="${p.no}"]`);if(el){el.scrollIntoView({block:'center',behavior:RM?'auto':'smooth'});await wait(380);
     // ring of light opens out of the tile's centre (a mask, not a fade)
     const rv=document.createElement('div');rv.className='reveal';el.appendChild(rv);
     await play(700,t=>{const u=t/700,o=lerp(0,95,GLIDE(clamp01(u/.55))),i=lerp(0,95,GLIDE(clamp01((u-.2)/.8)));
       rv.style.clipPath=`circle(${o}% at 50% 44%)`;rv.style.setProperty('--in',i+'%')});rv.remove()}
-  if(levelAfter>levelBefore)toast(`Level up! You're now level ${levelAfter}`)});
+  if(typeof celebrateAfter==='function')celebrateAfter(levelBefore,levelAfter);else if(levelAfter>levelBefore)toast(`Level up! You're now level ${levelAfter}`)});
 
 /* ---------- backup ---------- */
-$('#exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({app:'pokedex',v:1,saved:new Date().toISOString(),own,fav,wish,name:$('#tname').textContent.trim()})],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`pokedex-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);toast('Backup saved')});
-$('#importInp').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await f.text());if(j.app!=='pokedex'||typeof j.own!=='object')throw 0;
-  own=j.own;fav=j.fav||{};wish=j.wish||{};if(j.name){$('#tname').textContent=j.name;try{localStorage.setItem('pokedex.name',j.name)}catch(_){}}save();renderHome();renderGrid();toast('Backup loaded')}catch(_){toast('That file isn\'t a Pokédex backup')}e.target.value=''});
 
 /* ---------- trainer name ---------- */
-$('#tname').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur()}});
-$('#tname').addEventListener('blur',e=>{const v=e.target.textContent.trim().slice(0,20)||'Trainer';e.target.textContent=v;try{localStorage.setItem('pokedex.name',v)}catch(_){};$('.avatar').textContent=v[0].toUpperCase()});
 
 /* ---------- start ---------- */
 (async function start(){load();try{const nm=localStorage.getItem('pokedex.name');if(nm)$('#tname').textContent=nm}catch(e){}
@@ -337,6 +336,8 @@ $('#tname').addEventListener('blur',e=>{const v=e.target.textContent.trim().slic
   const txt=await (await fetch('dex.txt?v=1')).text();
   DEX=txt.trim().split('\n').map((l,i)=>{const f=l.split('|');return {no:i+1,name:f[0],types:f[1].split('.'),gen:+f[2],from:f[3]?+f[3]:0,leg:f[4].includes('L'),myth:f[4].includes('M'),hp:+f[5],atk:+f[6],ht:+f[7]/10,wt:+f[8]/10}});
   kids={};DEX.forEach(p=>{if(p.from)(kids[p.from]=kids[p.from]||[]).push(p.no)});
+  try{FLAV=(await (await fetch('flavor.txt?v=1')).text()).split('\n')}catch(e){FLAV=[]}
+  if(typeof initFeatures==='function')initFeatures();
   renderGens();renderFilters();renderGrid();renderHome();
   if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
   window.__audit={go,openTile:n=>openTile($(`.tile[data-no="${n}"]`)),closeTile,turnCard,find,catchCard,toEntry,get own(){return own}};})();
