@@ -1307,4 +1307,18 @@ body.sheet-open{overflow:hidden}
   .ckprint .bx{flex:none;width:12px;height:12px;border:1.5px solid #333;border-radius:3px;font:900 10px/12px Arial;text-align:center}
   .ckprint li.got .bx{background:#111;color:#fff}
   .ckprint footer{margin-top:10px;color:#555}}
+/* ---------- achieve.js ---------- */
+.ac-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 6px;margin-bottom:8px}
+.ac{display:grid;justify-items:center;gap:4px;text-align:center;min-width:0;transition:transform var(--sp-snap-ms) var(--sp-snap)}
+.ac:active{transform:scale(.92)}
+.ac-m{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:26px;background:radial-gradient(circle at 35% 30%,#ffffff1c,#ffffff06);box-shadow:inset 0 0 0 2px #ffffff1a}
+.ac.got .ac-m{background:radial-gradient(circle at 35% 30%,#fff6c4,var(--gold1) 38%,var(--gold2));box-shadow:0 0 0 3px #ffffff1f,0 6px 16px #e9a80055;animation:stamp var(--sp-snap-ms) var(--sp-snap) both;animation-delay:calc(var(--i)*25ms)}
+.ac-m{position:relative}.ac:not(.got) .ac-m{filter:grayscale(1) brightness(.55)}
+.ac-lk{position:absolute;right:-2px;bottom:-2px;font-size:14px;font-style:normal;filter:brightness(1.8)}
+.ac small{font:600 10.5px/1.15 var(--display);color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ac.got small{color:var(--fg)}
+.ac.sel .ac-m{box-shadow:0 0 0 3px #fff,0 0 18px var(--gold1)}
+.ac-info{display:flex;gap:12px;align-items:center;padding:12px;border-radius:16px;background:var(--panel);margin:0 0 6px}
+.ac-info.in{animation:rise var(--sp-snap-ms) var(--sp-snap)}
+.ac-big{font-size:34px}.ac-info>span:last-child{display:grid;gap:2px}.ac-info b{font:800 15px var(--display)}.ac-info small{font-size:12.5px;color:var(--muted)}.ac-info em{font:700 12px var(--display);font-style:normal;color:var(--gold1)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rm-a,.hf-card,.cert,.ct-seal,.sg-chip,.wk2-stamp,.vl-in,.vt-pc,.vt-zoom img,.tm-bar i{transform:none!important;clip-path:none!important}}
